@@ -1,0 +1,12 @@
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  cmd = "GOOS=linux GOARCH=amd64 go build -o ./tmp/main . && chmod +x ./tmp/main"
+  bin = "tmp/main"
+  full_bin = "tmp/main"
+  include_ext = ["go"]
+  exclude_dir = ["tmp"]
+
+[log]
+  time = true

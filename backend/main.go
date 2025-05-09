@@ -1,20 +1,23 @@
-// backend/main.go
 package main
 
 import (
-	"net/http"
-
-	"github.com/labstack/echo/v4"
+    "log"
+    "net/http"
+    "backend/db"
 )
 
 func main() {
-	e := echo.New()
+    if err := db.Connect(); err != nil {
+        log.Fatal("DB接続失敗:", err)
+    }
 
-	// 動作確認用シンプルルート
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "ChatApp API 動作中 🚀")
-	})
+    log.Println("DB接続成功！")
 
-	// サーバー起動
-	e.Logger.Fatal(e.Start(":8080"))
+    http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+        w.Write([]byte("Hello, chat app!"))
+    })
+
+    log.Println("サーバー起動中 http://localhost:8080")
+    log.Fatal(http.ListenAndServe(":8080", nil))
 }
+
