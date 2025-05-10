@@ -8,3 +8,4 @@ import (
 func Migrate() error {
     return DB.AutoMigrate(&models.User{}, &models.Message{})
 }
+
