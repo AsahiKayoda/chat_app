@@ -1,3 +1,4 @@
+
 package api
 
 import (
@@ -22,4 +23,5 @@ func (h *HandlerImpl) UsersPost(ctx context.Context, req *gen.UserInput) (*gen.U
 		Name:  user.Name,
 		Email: user.Email,
 	}, nil
+
 }

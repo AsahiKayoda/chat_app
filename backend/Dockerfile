@@ -1,9 +1,11 @@
+
 #dockerイメージのベース
 FROM golang:1.24
 #作業場所
 WORKDIR /app
 #ソースコードをコピー
 COPY go.mod ./ 
+
 RUN go mod download
 
 # air をインストール
