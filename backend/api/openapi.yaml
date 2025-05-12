@@ -20,6 +20,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/User'
+        'default':
+          description: Error response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
 
 components:
   schemas:
@@ -28,10 +34,13 @@ components:
       required:
         - name
         - email
+        - password
       properties:
         name:
           type: string
         email:
+          type: string
+        password:
           type: string
 
     User:
@@ -46,4 +55,12 @@ components:
         name:
           type: string
         email:
+          type: string
+
+    Error:
+      type: object
+      required:
+        - message
+      properties:
+        message:
           type: string

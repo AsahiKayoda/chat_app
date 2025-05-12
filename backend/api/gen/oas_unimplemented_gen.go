@@ -21,3 +21,11 @@ var _ Handler = UnimplementedHandler{}
 func (UnimplementedHandler) UsersPost(ctx context.Context, req *UserInput) (r *User, _ error) {
 	return r, ht.ErrNotImplemented
 }
+
+// NewError creates *ErrorStatusCode from error returned by handler.
+//
+// Used for common default response.
+func (UnimplementedHandler) NewError(ctx context.Context, err error) (r *ErrorStatusCode) {
+	r = new(ErrorStatusCode)
+	return r
+}

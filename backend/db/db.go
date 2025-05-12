@@ -22,9 +22,9 @@ type UserModel struct {
     ID    uint   `gorm:"primaryKey"`
     Name  string
     Email string
+    Password string `gorm:"not null"` // ←　signinのため
 }
 
 func (UserModel) TableName() string {
     return "users" // ← 実際のテーブル名に合わせる
-
 }

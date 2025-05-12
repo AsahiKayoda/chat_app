@@ -30,3 +30,6 @@ func main() {
 	if err := http.ListenAndServe(":8080", server); err != nil {
 		log.Fatalf("❌ サーバー起動エラー: %v", err)
 	}
+
+
+}
