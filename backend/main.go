@@ -1,22 +1,33 @@
 package main
 
 import (
-    "log"
-    "net/http"
-    "backend/db"
-    "backend/api"
+	"log"
+	"net/http"
+
+	"backend/db"
+	gen "backend/api/gen"
+	"backend/api"
 )
 
 func main() {
-    if err := db.Connect(); err != nil {
-        log.Fatal("DB接続失敗:", err)
-    }
+	// DB接続
+	if err := db.Connect(); err != nil {
+		log.Fatalf("❌ データベース接続に失敗: %v", err)
+	}
+	log.Println("✅ データベース接続成功")
 
-    handler, err := api.NewServer(api.NewStrictHandler(&api.Server{}, nil))
-    if err != nil {
-        log.Fatal(err)
-    }
+	// Handler を実装にバインド
+	handler := &api.HandlerImpl{}
 
-    log.Println("サーバー起動中 http://localhost:8080")
-    log.Fatal(http.ListenAndServe(":8080", handler))
+	// ogen が生成した HTTPサーバを起動
+	server, err := gen.NewServer(handler)
+	if err != nil {
+		log.Fatalf("❌ サーバー生成に失敗: %v", err)
+	}
+	log.Println("✅ サーバー構築成功")
+	log.Println("🚀 サーバー起動: http://localhost:8080")
+
+	if err := http.ListenAndServe(":8080", server); err != nil {
+		log.Fatalf("❌ サーバー起動エラー: %v", err)
+	}
 }

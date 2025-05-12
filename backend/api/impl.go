@@ -1,20 +1,25 @@
-// backend/api/impl.go
 package api
 
 import (
-  "context"
-  "backend/db"
-  "backend/models"
+	"context"
+	"backend/db"
+	gen "backend/api/gen"
 )
 
-func (s *Server) CreateUser(ctx context.Context, req *UserInput) (*User, error) {
-    user := models.User{Name: req.Name, Email: req.Email}
-    if result := db.DB.Create(&user); result.Error != nil {
-        return nil, result.Error
-    }
-    return &User{
-        Id:    user.ID,
-        Name:  user.Name,
-        Email: user.Email,
-    }, nil
+type HandlerImpl struct{}
+
+// UsersPost implements gen.Handler interface
+func (h *HandlerImpl) UsersPost(ctx context.Context, req *gen.UserInput) (*gen.User, error) {
+	user := db.UserModel{
+		Name:  req.Name,
+		Email: req.Email,
+	}
+	if result := db.DB.Create(&user); result.Error != nil {
+		return nil, result.Error
+	}
+	return &gen.User{
+		ID:    int(user.ID),
+		Name:  user.Name,
+		Email: user.Email,
+	}, nil
 }

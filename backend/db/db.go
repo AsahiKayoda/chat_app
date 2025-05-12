@@ -15,3 +15,14 @@ func Connect() error {//データベースとmain.goをつなげる関数
     DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
     return err
 }
+
+// GORMで使うUserのモデル。DBに保存するため（永続化）
+type UserModel struct {
+    ID    uint   `gorm:"primaryKey"`
+    Name  string
+    Email string
+}
+
+func (UserModel) TableName() string {
+    return "users" // ← 実際のテーブル名に合わせる
+}

@@ -9,6 +9,7 @@ services:
       - "8080:8080"
     volumes:
       - ./backend:/app
+      - /app/tmp  # ← コンテナ側のtmpディレクトリを volume から外す
     working_dir: /app
     command: air -c .air.toml
     environment:
