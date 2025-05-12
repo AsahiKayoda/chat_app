@@ -19,12 +19,11 @@ func Connect() error {//データベースとmain.goをつなげる関数
 
 // GORMで使うUserのモデル。DBに保存するため（永続化）
 type UserModel struct {
-    ID    uint   `gorm:"primaryKey"`
-    Name  string
-    Email string
-    Password string `gorm:"not null"` // ←　signinのため
+	ID           uint      `gorm:"primaryKey"`
+	Username     string    `gorm:"not null"`
+	PasswordHash string    `gorm:"not null"`
 }
 
 func (UserModel) TableName() string {
-    return "users" // ← 実際のテーブル名に合わせる
+	return "users"
 }

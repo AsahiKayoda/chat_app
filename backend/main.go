@@ -6,7 +6,7 @@ import (
 
 	"backend/db"
 	gen "backend/api/gen"
-	"backend/api"
+	impl "backend/api/impl"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 	log.Println("✅ データベース接続成功")
 
 	// Handler を実装にバインド
-	handler := &api.HandlerImpl{}
+	handler := &impl.HandlerImpl{}
 
 	// ogen が生成した HTTPサーバを起動
 	server, err := gen.NewServer(handler)

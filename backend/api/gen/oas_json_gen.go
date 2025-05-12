@@ -125,16 +125,11 @@ func (s *User) encodeFields(e *jx.Encoder) {
 		e.FieldStart("name")
 		e.Str(s.Name)
 	}
-	{
-		e.FieldStart("email")
-		e.Str(s.Email)
-	}
 }
 
-var jsonFieldsNameOfUser = [3]string{
+var jsonFieldsNameOfUser = [2]string{
 	0: "id",
 	1: "name",
-	2: "email",
 }
 
 // Decode decodes User from json.
@@ -170,18 +165,6 @@ func (s *User) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"name\"")
 			}
-		case "email":
-			requiredBitSet[0] |= 1 << 2
-			if err := func() error {
-				v, err := d.Str()
-				s.Email = string(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"email\"")
-			}
 		default:
 			return d.Skip()
 		}
@@ -192,7 +175,7 @@ func (s *User) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.
@@ -252,19 +235,14 @@ func (s *UserInput) encodeFields(e *jx.Encoder) {
 		e.Str(s.Name)
 	}
 	{
-		e.FieldStart("email")
-		e.Str(s.Email)
-	}
-	{
 		e.FieldStart("password")
 		e.Str(s.Password)
 	}
 }
 
-var jsonFieldsNameOfUserInput = [3]string{
+var jsonFieldsNameOfUserInput = [2]string{
 	0: "name",
-	1: "email",
-	2: "password",
+	1: "password",
 }
 
 // Decode decodes UserInput from json.
@@ -288,20 +266,8 @@ func (s *UserInput) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"name\"")
 			}
-		case "email":
-			requiredBitSet[0] |= 1 << 1
-			if err := func() error {
-				v, err := d.Str()
-				s.Email = string(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"email\"")
-			}
 		case "password":
-			requiredBitSet[0] |= 1 << 2
+			requiredBitSet[0] |= 1 << 1
 			if err := func() error {
 				v, err := d.Str()
 				s.Password = string(v)
@@ -322,7 +288,7 @@ func (s *UserInput) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

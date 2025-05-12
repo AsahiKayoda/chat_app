@@ -33,12 +33,9 @@ components:
       type: object
       required:
         - name
-        - email
         - password
       properties:
         name:
-          type: string
-        email:
           type: string
         password:
           type: string
@@ -48,14 +45,12 @@ components:
       required:
         - id
         - name
-        - email
       properties:
         id:
           type: integer
         name:
           type: string
-        email:
-          type: string
+  
 
     Error:
       type: object

@@ -53,9 +53,8 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 
 // Ref: #/components/schemas/User
 type User struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 // GetID returns the value of ID.
@@ -68,11 +67,6 @@ func (s *User) GetName() string {
 	return s.Name
 }
 
-// GetEmail returns the value of Email.
-func (s *User) GetEmail() string {
-	return s.Email
-}
-
 // SetID sets the value of ID.
 func (s *User) SetID(val int) {
 	s.ID = val
@@ -83,26 +77,15 @@ func (s *User) SetName(val string) {
 	s.Name = val
 }
 
-// SetEmail sets the value of Email.
-func (s *User) SetEmail(val string) {
-	s.Email = val
-}
-
 // Ref: #/components/schemas/UserInput
 type UserInput struct {
 	Name     string `json:"name"`
-	Email    string `json:"email"`
 	Password string `json:"password"`
 }
 
 // GetName returns the value of Name.
 func (s *UserInput) GetName() string {
 	return s.Name
-}
-
-// GetEmail returns the value of Email.
-func (s *UserInput) GetEmail() string {
-	return s.Email
 }
 
 // GetPassword returns the value of Password.
@@ -113,11 +96,6 @@ func (s *UserInput) GetPassword() string {
 // SetName sets the value of Name.
 func (s *UserInput) SetName(val string) {
 	s.Name = val
-}
-
-// SetEmail sets the value of Email.
-func (s *UserInput) SetEmail(val string) {
-	s.Email = val
 }
 
 // SetPassword sets the value of Password.
