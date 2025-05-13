@@ -24,8 +24,8 @@ func main() {
 	if err != nil {
 		log.Fatalf("❌ サーバー生成に失敗: %v", err)
 	}
-	log.Println("✅ サーバー構築成功")
-	log.Println("🚀 サーバー起動: http://localhost:8080")
+	log.Println("✅ サーバー構築成功2")
+	log.Println("🚀 サーバー起動2: http://localhost:8080")
 
 	if err := http.ListenAndServe(":8080", server); err != nil {
 		log.Fatalf("❌ サーバー起動エラー: %v", err)

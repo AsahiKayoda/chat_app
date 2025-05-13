@@ -15,6 +15,7 @@ import (
 	semconv "go.opentelemetry.io/otel/semconv/v1.26.0"
 	"go.opentelemetry.io/otel/trace"
 
+	"github.com/ogen-go/ogen/conv"
 	ht "github.com/ogen-go/ogen/http"
 	"github.com/ogen-go/ogen/uri"
 )
@@ -32,12 +33,30 @@ type Invoker interface {
 	//
 	// POST /login
 	LoginPost(ctx context.Context, request *LoginRequest) (LoginPostRes, error)
-	// UsersPost invokes POST /users operation.
+	// MessagesGet invokes GET /messages operation.
+	//
+	// Get messages with a user.
+	//
+	// GET /messages
+	MessagesGet(ctx context.Context, params MessagesGetParams) ([]Message, error)
+	// MessagesPost invokes POST /messages operation.
+	//
+	// Send a message.
+	//
+	// POST /messages
+	MessagesPost(ctx context.Context, request *MessageInput) (*Message, error)
+	// SignupPost invokes POST /signup operation.
 	//
 	// Create a new user.
 	//
-	// POST /users
-	UsersPost(ctx context.Context, request *UserInput) (*User, error)
+	// POST /signup
+	SignupPost(ctx context.Context, request *UserInput) (SignupPostRes, error)
+	// UsersGet invokes GET /users operation.
+	//
+	// Get all users.
+	//
+	// GET /users
+	UsersGet(ctx context.Context) (UsersGetRes, error)
 }
 
 // Client implements OAS client.
@@ -45,12 +64,8 @@ type Client struct {
 	serverURL *url.URL
 	baseClient
 }
-type errorHandler interface {
-	NewError(ctx context.Context, err error) *ErrorStatusCode
-}
 
 var _ Handler = struct {
-	errorHandler
 	*Client
 }{}
 
@@ -161,19 +176,256 @@ func (c *Client) sendLoginPost(ctx context.Context, request *LoginRequest) (res 
 	return result, nil
 }
 
-// UsersPost invokes POST /users operation.
+// MessagesGet invokes GET /messages operation.
 //
-// Create a new user.
+// Get messages with a user.
 //
-// POST /users
-func (c *Client) UsersPost(ctx context.Context, request *UserInput) (*User, error) {
-	res, err := c.sendUsersPost(ctx, request)
+// GET /messages
+func (c *Client) MessagesGet(ctx context.Context, params MessagesGetParams) ([]Message, error) {
+	res, err := c.sendMessagesGet(ctx, params)
 	return res, err
 }
 
-func (c *Client) sendUsersPost(ctx context.Context, request *UserInput) (res *User, err error) {
+func (c *Client) sendMessagesGet(ctx context.Context, params MessagesGetParams) (res []Message, err error) {
+	otelAttrs := []attribute.KeyValue{
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.HTTPRouteKey.String("/messages"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, MessagesGetOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/messages"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeQueryParams"
+	q := uri.NewQueryEncoder()
+	{
+		// Encode "receiver_id" parameter.
+		cfg := uri.QueryParameterEncodingConfig{
+			Name:    "receiver_id",
+			Style:   uri.QueryStyleForm,
+			Explode: true,
+		}
+
+		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
+			return e.EncodeValue(conv.IntToString(params.ReceiverID))
+		}); err != nil {
+			return res, errors.Wrap(err, "encode query")
+		}
+	}
+	u.RawQuery = q.Values().Encode()
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeMessagesGetResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// MessagesPost invokes POST /messages operation.
+//
+// Send a message.
+//
+// POST /messages
+func (c *Client) MessagesPost(ctx context.Context, request *MessageInput) (*Message, error) {
+	res, err := c.sendMessagesPost(ctx, request)
+	return res, err
+}
+
+func (c *Client) sendMessagesPost(ctx context.Context, request *MessageInput) (res *Message, err error) {
 	otelAttrs := []attribute.KeyValue{
 		semconv.HTTPRequestMethodKey.String("POST"),
+		semconv.HTTPRouteKey.String("/messages"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, MessagesPostOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/messages"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeMessagesPostRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeMessagesPostResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// SignupPost invokes POST /signup operation.
+//
+// Create a new user.
+//
+// POST /signup
+func (c *Client) SignupPost(ctx context.Context, request *UserInput) (SignupPostRes, error) {
+	res, err := c.sendSignupPost(ctx, request)
+	return res, err
+}
+
+func (c *Client) sendSignupPost(ctx context.Context, request *UserInput) (res SignupPostRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		semconv.HTTPRequestMethodKey.String("POST"),
+		semconv.HTTPRouteKey.String("/signup"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, SignupPostOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/signup"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeSignupPostRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeSignupPostResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// UsersGet invokes GET /users operation.
+//
+// Get all users.
+//
+// GET /users
+func (c *Client) UsersGet(ctx context.Context) (UsersGetRes, error) {
+	res, err := c.sendUsersGet(ctx)
+	return res, err
+}
+
+func (c *Client) sendUsersGet(ctx context.Context) (res UsersGetRes, err error) {
+	otelAttrs := []attribute.KeyValue{
+		semconv.HTTPRequestMethodKey.String("GET"),
 		semconv.HTTPRouteKey.String("/users"),
 	}
 
@@ -189,7 +441,7 @@ func (c *Client) sendUsersPost(ctx context.Context, request *UserInput) (res *Us
 	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
 
 	// Start a span for this request.
-	ctx, span := c.cfg.Tracer.Start(ctx, UsersPostOperation,
+	ctx, span := c.cfg.Tracer.Start(ctx, UsersGetOperation,
 		trace.WithAttributes(otelAttrs...),
 		clientSpanKind,
 	)
@@ -211,12 +463,9 @@ func (c *Client) sendUsersPost(ctx context.Context, request *UserInput) (res *Us
 	uri.AddPathParts(u, pathParts[:]...)
 
 	stage = "EncodeRequest"
-	r, err := ht.NewRequest(ctx, "POST", u)
+	r, err := ht.NewRequest(ctx, "GET", u)
 	if err != nil {
 		return res, errors.Wrap(err, "create request")
-	}
-	if err := encodeUsersPostRequest(request, r); err != nil {
-		return res, errors.Wrap(err, "encode request")
 	}
 
 	stage = "SendRequest"
@@ -227,7 +476,7 @@ func (c *Client) sendUsersPost(ctx context.Context, request *UserInput) (res *Us
 	defer resp.Body.Close()
 
 	stage = "DecodeResponse"
-	result, err := decodeUsersPostResponse(resp)
+	result, err := decodeUsersGetResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

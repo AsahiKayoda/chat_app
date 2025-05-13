@@ -80,6 +80,48 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
+			case 'm': // Prefix: "messages"
+
+				if l := len("messages"); len(elem) >= l && elem[0:l] == "messages" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch r.Method {
+					case "GET":
+						s.handleMessagesGetRequest([0]string{}, elemIsEscaped, w, r)
+					case "POST":
+						s.handleMessagesPostRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, "GET,POST")
+					}
+
+					return
+				}
+
+			case 's': // Prefix: "signup"
+
+				if l := len("signup"); len(elem) >= l && elem[0:l] == "signup" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch r.Method {
+					case "POST":
+						s.handleSignupPostRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, "POST")
+					}
+
+					return
+				}
+
 			case 'u': // Prefix: "users"
 
 				if l := len("users"); len(elem) >= l && elem[0:l] == "users" {
@@ -91,10 +133,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				if len(elem) == 0 {
 					// Leaf node.
 					switch r.Method {
-					case "POST":
-						s.handleUsersPostRequest([0]string{}, elemIsEscaped, w, r)
+					case "GET":
+						s.handleUsersGetRequest([0]string{}, elemIsEscaped, w, r)
 					default:
-						s.notAllowed(w, r, "POST")
+						s.notAllowed(w, r, "GET")
 					}
 
 					return
@@ -218,6 +260,62 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					}
 				}
 
+			case 'm': // Prefix: "messages"
+
+				if l := len("messages"); len(elem) >= l && elem[0:l] == "messages" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch method {
+					case "GET":
+						r.name = MessagesGetOperation
+						r.summary = "Get messages with a user"
+						r.operationID = ""
+						r.pathPattern = "/messages"
+						r.args = args
+						r.count = 0
+						return r, true
+					case "POST":
+						r.name = MessagesPostOperation
+						r.summary = "Send a message"
+						r.operationID = ""
+						r.pathPattern = "/messages"
+						r.args = args
+						r.count = 0
+						return r, true
+					default:
+						return
+					}
+				}
+
+			case 's': // Prefix: "signup"
+
+				if l := len("signup"); len(elem) >= l && elem[0:l] == "signup" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch method {
+					case "POST":
+						r.name = SignupPostOperation
+						r.summary = "Create a new user"
+						r.operationID = ""
+						r.pathPattern = "/signup"
+						r.args = args
+						r.count = 0
+						return r, true
+					default:
+						return
+					}
+				}
+
 			case 'u': // Prefix: "users"
 
 				if l := len("users"); len(elem) >= l && elem[0:l] == "users" {
@@ -229,9 +327,9 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				if len(elem) == 0 {
 					// Leaf node.
 					switch method {
-					case "POST":
-						r.name = UsersPostOperation
-						r.summary = "Create a new user"
+					case "GET":
+						r.name = UsersGetOperation
+						r.summary = "Get all users"
 						r.operationID = ""
 						r.pathPattern = "/users"
 						r.args = args

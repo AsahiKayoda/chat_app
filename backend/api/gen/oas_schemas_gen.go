@@ -3,12 +3,8 @@
 package api
 
 import (
-	"fmt"
+	"time"
 )
-
-func (s *ErrorStatusCode) Error() string {
-	return fmt.Sprintf("code %d: %+v", s.StatusCode, s.Response)
-}
 
 // Ref: #/components/schemas/Error
 type Error struct {
@@ -24,6 +20,8 @@ func (s *Error) GetMessage() string {
 func (s *Error) SetMessage(val string) {
 	s.Message = val
 }
+
+func (*Error) loginPostRes() {}
 
 // ErrorStatusCode wraps Error with StatusCode.
 type ErrorStatusCode struct {
@@ -51,10 +49,9 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 	s.Response = val
 }
 
-// LoginPostUnauthorized is response for LoginPost operation.
-type LoginPostUnauthorized struct{}
-
-func (*LoginPostUnauthorized) loginPostRes() {}
+func (*ErrorStatusCode) loginPostRes()  {}
+func (*ErrorStatusCode) signupPostRes() {}
+func (*ErrorStatusCode) usersGetRes()   {}
 
 // Ref: #/components/schemas/LoginRequest
 type LoginRequest struct {
@@ -98,6 +95,119 @@ func (s *LoginResponse) SetToken(val string) {
 }
 
 func (*LoginResponse) loginPostRes() {}
+
+// Ref: #/components/schemas/Message
+type Message struct {
+	ID         int       `json:"id"`
+	SenderID   int       `json:"sender_id"`
+	ReceiverID int       `json:"receiver_id"`
+	Text       string    `json:"text"`
+	Timestamp  time.Time `json:"timestamp"`
+}
+
+// GetID returns the value of ID.
+func (s *Message) GetID() int {
+	return s.ID
+}
+
+// GetSenderID returns the value of SenderID.
+func (s *Message) GetSenderID() int {
+	return s.SenderID
+}
+
+// GetReceiverID returns the value of ReceiverID.
+func (s *Message) GetReceiverID() int {
+	return s.ReceiverID
+}
+
+// GetText returns the value of Text.
+func (s *Message) GetText() string {
+	return s.Text
+}
+
+// GetTimestamp returns the value of Timestamp.
+func (s *Message) GetTimestamp() time.Time {
+	return s.Timestamp
+}
+
+// SetID sets the value of ID.
+func (s *Message) SetID(val int) {
+	s.ID = val
+}
+
+// SetSenderID sets the value of SenderID.
+func (s *Message) SetSenderID(val int) {
+	s.SenderID = val
+}
+
+// SetReceiverID sets the value of ReceiverID.
+func (s *Message) SetReceiverID(val int) {
+	s.ReceiverID = val
+}
+
+// SetText sets the value of Text.
+func (s *Message) SetText(val string) {
+	s.Text = val
+}
+
+// SetTimestamp sets the value of Timestamp.
+func (s *Message) SetTimestamp(val time.Time) {
+	s.Timestamp = val
+}
+
+// Ref: #/components/schemas/MessageInput
+type MessageInput struct {
+	ReceiverID int    `json:"receiver_id"`
+	Text       string `json:"text"`
+}
+
+// GetReceiverID returns the value of ReceiverID.
+func (s *MessageInput) GetReceiverID() int {
+	return s.ReceiverID
+}
+
+// GetText returns the value of Text.
+func (s *MessageInput) GetText() string {
+	return s.Text
+}
+
+// SetReceiverID sets the value of ReceiverID.
+func (s *MessageInput) SetReceiverID(val int) {
+	s.ReceiverID = val
+}
+
+// SetText sets the value of Text.
+func (s *MessageInput) SetText(val string) {
+	s.Text = val
+}
+
+// Ref: #/components/schemas/SignupResponse
+type SignupResponse struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
+
+// GetID returns the value of ID.
+func (s *SignupResponse) GetID() int {
+	return s.ID
+}
+
+// GetName returns the value of Name.
+func (s *SignupResponse) GetName() string {
+	return s.Name
+}
+
+// SetID sets the value of ID.
+func (s *SignupResponse) SetID(val int) {
+	s.ID = val
+}
+
+// SetName sets the value of Name.
+func (s *SignupResponse) SetName(val string) {
+	s.Name = val
+}
+
+func (*SignupResponse) signupPostRes() {}
 
 // Ref: #/components/schemas/User
 type User struct {
@@ -150,3 +260,7 @@ func (s *UserInput) SetName(val string) {
 func (s *UserInput) SetPassword(val string) {
 	s.Password = val
 }
+
+type UsersGetOKApplicationJSON []User
+
+func (*UsersGetOKApplicationJSON) usersGetRes() {}

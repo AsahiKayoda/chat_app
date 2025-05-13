@@ -10,7 +10,7 @@ import (
 
 type HandlerImpl struct{}
 
-func (h *HandlerImpl) UsersPost(ctx context.Context, req *gen.UserInput) (*gen.User, error) {
+func (h *HandlerImpl) SignupPost(ctx context.Context, req *gen.UserInput) (gen.SignupPostRes, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -25,7 +25,7 @@ func (h *HandlerImpl) UsersPost(ctx context.Context, req *gen.UserInput) (*gen.U
 		return nil, result.Error
 	}
 
-	return &gen.User{
+	return &gen.SignupResponse{
 		ID:   int(user.ID),
 		Name: user.Username,
 	}, nil

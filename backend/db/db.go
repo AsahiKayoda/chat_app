@@ -1,11 +1,13 @@
 //SQLとバックエンドを接続するプログラム
 package db
 
-import (
+import (//ORMライブラリ。SQLを書かずにデータの構造体を変更
     "gorm.io/driver/postgres"
     "gorm.io/gorm"
+
     "os"
-)//ORMライブラリ。SQLを書かずにデータの構造体を変更
+    "time"
+)
 
 var DB *gorm.DB
 
@@ -26,4 +28,16 @@ type UserModel struct {
 
 func (UserModel) TableName() string {
 	return "users"
+}
+
+type MessageModel struct {
+	ID         uint      `gorm:"primaryKey"`
+	SenderID   uint      `gorm:"not null"`
+	ReceiverID uint      `gorm:"not null"`
+	Text       string    `gorm:"not null"`
+	Timestamp  time.Time `gorm:"autoCreateTime"`
+}
+
+func (MessageModel) TableName() string {
+	return "messages"
 }

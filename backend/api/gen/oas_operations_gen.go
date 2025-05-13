@@ -6,6 +6,9 @@ package api
 type OperationName = string
 
 const (
-	LoginPostOperation OperationName = "LoginPost"
-	UsersPostOperation OperationName = "UsersPost"
+	LoginPostOperation    OperationName = "LoginPost"
+	MessagesGetOperation  OperationName = "MessagesGet"
+	MessagesPostOperation OperationName = "MessagesPost"
+	SignupPostOperation   OperationName = "SignupPost"
+	UsersGetOperation     OperationName = "UsersGet"
 )

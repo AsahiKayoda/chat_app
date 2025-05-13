@@ -22,19 +22,38 @@ func (UnimplementedHandler) LoginPost(ctx context.Context, req *LoginRequest) (r
 	return r, ht.ErrNotImplemented
 }
 
-// UsersPost implements POST /users operation.
+// MessagesGet implements GET /messages operation.
 //
-// Create a new user.
+// Get messages with a user.
 //
-// POST /users
-func (UnimplementedHandler) UsersPost(ctx context.Context, req *UserInput) (r *User, _ error) {
+// GET /messages
+func (UnimplementedHandler) MessagesGet(ctx context.Context, params MessagesGetParams) (r []Message, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
-// NewError creates *ErrorStatusCode from error returned by handler.
+// MessagesPost implements POST /messages operation.
 //
-// Used for common default response.
-func (UnimplementedHandler) NewError(ctx context.Context, err error) (r *ErrorStatusCode) {
-	r = new(ErrorStatusCode)
-	return r
+// Send a message.
+//
+// POST /messages
+func (UnimplementedHandler) MessagesPost(ctx context.Context, req *MessageInput) (r *Message, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// SignupPost implements POST /signup operation.
+//
+// Create a new user.
+//
+// POST /signup
+func (UnimplementedHandler) SignupPost(ctx context.Context, req *UserInput) (r SignupPostRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// UsersGet implements GET /users operation.
+//
+// Get all users.
+//
+// GET /users
+func (UnimplementedHandler) UsersGet(ctx context.Context) (r UsersGetRes, _ error) {
+	return r, ht.ErrNotImplemented
 }

@@ -14,16 +14,30 @@ type Handler interface {
 	//
 	// POST /login
 	LoginPost(ctx context.Context, req *LoginRequest) (LoginPostRes, error)
-	// UsersPost implements POST /users operation.
+	// MessagesGet implements GET /messages operation.
+	//
+	// Get messages with a user.
+	//
+	// GET /messages
+	MessagesGet(ctx context.Context, params MessagesGetParams) ([]Message, error)
+	// MessagesPost implements POST /messages operation.
+	//
+	// Send a message.
+	//
+	// POST /messages
+	MessagesPost(ctx context.Context, req *MessageInput) (*Message, error)
+	// SignupPost implements POST /signup operation.
 	//
 	// Create a new user.
 	//
-	// POST /users
-	UsersPost(ctx context.Context, req *UserInput) (*User, error)
-	// NewError creates *ErrorStatusCode from error returned by handler.
+	// POST /signup
+	SignupPost(ctx context.Context, req *UserInput) (SignupPostRes, error)
+	// UsersGet implements GET /users operation.
 	//
-	// Used for common default response.
-	NewError(ctx context.Context, err error) *ErrorStatusCode
+	// Get all users.
+	//
+	// GET /users
+	UsersGet(ctx context.Context) (UsersGetRes, error)
 }
 
 // Server implements http server based on OpenAPI v3 specification and

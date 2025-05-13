@@ -4,3 +4,11 @@ package api
 type LoginPostRes interface {
 	loginPostRes()
 }
+
+type SignupPostRes interface {
+	signupPostRes()
+}
+
+type UsersGetRes interface {
+	usersGetRes()
+}
