@@ -8,6 +8,12 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
+	// LoginPost implements POST /login operation.
+	//
+	// Login.
+	//
+	// POST /login
+	LoginPost(ctx context.Context, req *LoginRequest) (LoginPostRes, error)
 	// UsersPost implements POST /users operation.
 	//
 	// Create a new user.

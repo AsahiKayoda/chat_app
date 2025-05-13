@@ -6,5 +6,6 @@ package api
 type OperationName = string
 
 const (
+	LoginPostOperation OperationName = "LoginPost"
 	UsersPostOperation OperationName = "UsersPost"
 )

@@ -51,6 +51,54 @@ func (s *ErrorStatusCode) SetResponse(val Error) {
 	s.Response = val
 }
 
+// LoginPostUnauthorized is response for LoginPost operation.
+type LoginPostUnauthorized struct{}
+
+func (*LoginPostUnauthorized) loginPostRes() {}
+
+// Ref: #/components/schemas/LoginRequest
+type LoginRequest struct {
+	Name     string `json:"name"`
+	Password string `json:"password"`
+}
+
+// GetName returns the value of Name.
+func (s *LoginRequest) GetName() string {
+	return s.Name
+}
+
+// GetPassword returns the value of Password.
+func (s *LoginRequest) GetPassword() string {
+	return s.Password
+}
+
+// SetName sets the value of Name.
+func (s *LoginRequest) SetName(val string) {
+	s.Name = val
+}
+
+// SetPassword sets the value of Password.
+func (s *LoginRequest) SetPassword(val string) {
+	s.Password = val
+}
+
+// Ref: #/components/schemas/LoginResponse
+type LoginResponse struct {
+	Token string `json:"token"`
+}
+
+// GetToken returns the value of Token.
+func (s *LoginResponse) GetToken() string {
+	return s.Token
+}
+
+// SetToken sets the value of Token.
+func (s *LoginResponse) SetToken(val string) {
+	s.Token = val
+}
+
+func (*LoginResponse) loginPostRes() {}
+
 // Ref: #/components/schemas/User
 type User struct {
 	ID   int    `json:"id"`
