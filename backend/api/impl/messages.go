@@ -11,7 +11,7 @@ import (
 
 // POST /messages - メッセージ送信
 func (h *HandlerImpl) MessagesPost(ctx context.Context, req *gen.MessageInput) (*gen.Message, error) {
-	senderID := 1 // 今は仮のログインユーザーID（将来はJWTから取得）
+	senderID := 1 // 仮のログインユーザー（後でJWTから取得する予定）
 
 	msg := db.MessageModel{
 		SenderID:   uint(senderID),
@@ -23,6 +23,7 @@ func (h *HandlerImpl) MessagesPost(ctx context.Context, req *gen.MessageInput) (
 		return nil, result.Error
 	}
 
+	// 作成したメッセージを返す
 	return &gen.Message{
 		ID:         int(msg.ID),
 		SenderID:   int(msg.SenderID),
@@ -34,17 +35,18 @@ func (h *HandlerImpl) MessagesPost(ctx context.Context, req *gen.MessageInput) (
 
 // GET /messages?receiver_id=X - メッセージ取得（相手とのやり取り）
 func (h *HandlerImpl) MessagesGet(ctx context.Context, params gen.MessagesGetParams) ([]gen.Message, error) {
-	senderID := 1 // 今は仮のログインユーザーID（将来はJWTから取得）
+	senderID := 1 // JWTのトーク保有者のIDが代入される
 
 	var messages []db.MessageModel
 	if result := db.DB.
 		Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)",
 			senderID, params.ReceiverID, params.ReceiverID, senderID).
-		Order("timestamp asc").
+		Order("timestamp asc").// 時系列順にソート
 		Find(&messages); result.Error != nil {
 		return nil, result.Error
 	}
 
+	// レスポンス整形
 	var resp []gen.Message
 	for _, m := range messages {
 		resp = append(resp, gen.Message{

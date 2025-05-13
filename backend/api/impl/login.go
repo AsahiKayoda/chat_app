@@ -23,13 +23,13 @@ func (h *HandlerImpl) LoginPost(ctx context.Context, req *gen.LoginRequest) (gen
 		return nil, result.Error
 	}
 
-	// パスワード照合
+	// パスワード比較
 	if err := bcrypt.CompareHashAndPassword([]byte(user.PasswordHash), []byte(req.Password)); err != nil {
 		// 認証失敗（パスワード不一致）
 		return nil, err
 	}
 
-	// JWTトークン生成
+	// JWTトークン生成（24時間有効）
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"sub": user.ID,
 		"exp": time.Now().Add(24 * time.Hour).Unix(),
@@ -39,7 +39,7 @@ func (h *HandlerImpl) LoginPost(ctx context.Context, req *gen.LoginRequest) (gen
 	if err != nil {
 		return nil, err
 	}
-	
+	// トークン返却
 	return &gen.LoginResponse{
 	Token: tokenString,
 	}, nil
@@ -47,7 +47,7 @@ func (h *HandlerImpl) LoginPost(ctx context.Context, req *gen.LoginRequest) (gen
 
 }
 
-// 環境変数ヘルパー
+// 環境変数を取得するユーティリティ関数
 func getEnv(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
 		return v

@@ -15,6 +15,7 @@ services:
     command: air -c .air.toml
     environment:
     - DB_DSN=host=db user=user password=password dbname=chat_app_db port=5432 sslmode=disable
+    - JWT_SECRET=my-super-secret-key  # ← JWTの環境変数
 
   frontend:
     build: ./frontend
