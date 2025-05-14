@@ -1,0 +1,48 @@
+/* app/signup/Signup.module.css */
+
+/* 🌍 ページ全体を中央に配置するためのコンテナ */
+.wrapper {
+  display: flex;                /* フレックスボックスを使って中央寄せ */
+  justify-content: center;     /* 横方向に中央 */
+  align-items: center;         /* 縦方向に中央 */
+  height: 100vh;               /* 画面の高さいっぱいに広げる */
+  background-color: #f9f9f9;   /* 背景色（薄いグレー） */
+}
+
+/* 🧱 実際のフォーム部分（白いボックス） */
+.container {
+  width: 100%;
+  max-width: 400px;            /* 横幅の最大値を指定 */
+  padding: 20px;               /* 内側の余白 */
+  background-color: #fff;      /* 背景は白 */
+  border-radius: 8px;          /* 角を少し丸く */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1); /* うっすら影を付ける */
+}
+
+/* 🏷️ タイトル（見出し） */
+.title {
+  color: #0070f3;              /* 青っぽい文字色 */
+  font-size: 24px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* 🖊️ 入力欄 */
+.input {
+  width: 100%;
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* 🔘 登録ボタン */
+.button {
+  width: 100%;
+  padding: 10px;
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}

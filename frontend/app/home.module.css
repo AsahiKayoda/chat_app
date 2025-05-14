@@ -1,0 +1,42 @@
+/* app/home.module.css */
+
+/* 全体中央寄せ */
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: #f9f9f9;
+}
+
+/* タイトル */
+.title {
+  color: #0070f3;
+  font-size: 32px;
+  margin-bottom: 24px;
+}
+
+/* ボタンコンテナ */
+.buttons {
+  display: flex;
+  flex-direction: column; /* ← 横並びを縦並びに変更！ */
+  gap: 12px;               /* ← ボタン同士の余白 */
+}
+
+/* 共通ボタンスタイル */
+.button {
+  padding: 12px 24px;
+  background-color: #0070f3;
+  color: #f0f8ff;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 16px;
+  text-decoration: none; /* aタグ用 */
+  transition: background-color 0.2s;
+}
+
+.button:hover {
+  background-color: #005ac1;
+}

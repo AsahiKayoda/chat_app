@@ -1,0 +1,93 @@
+/* 🧱 全体ラッパー：2カラムの横並びレイアウトにする */
+.wrapper {
+  display: flex;              /* 横並びにするためのFlexbox設定 */
+  height: 100vh;              /* 画面全体の高さを使う */
+  background-color: #f9f9f9;  /* 背景を薄いグレーにする */
+}
+
+/* 👥 左側：ユーザー一覧のサイドバー */
+.sidebar {
+  color: #f0f8ff;             /* テキストカラー（淡い青） */
+  width: 250px;               /* 横幅を固定 */
+  background-color: #0070f3;  /* サイドバーの背景を濃い青に */
+  border-right: 1px solid #eee; /* 右に薄い区切り線を表示 */
+  padding: 20px;              /* 内側に余白を取る */
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.05); /* 左から右にほんのり影をつける */
+}
+
+/* 👑 サイドバーの見出しの下に余白を空ける */
+.sidebar h3 {
+  margin-bottom: 16px;
+}
+
+
+/* 🧑‍💼 ユーザー一覧の各ユーザー */
+.user {
+  color: #f0f8ff;             /* 文字色を淡い青（背景とのコントラスト確保） */
+  padding: 10px;              /* 内側に余白 */
+  cursor: pointer;            /* マウスを乗せると「指マーク」になる */
+  border-bottom: 1px solid #eee; /* 下に線を表示（リスト感） */
+}
+
+/* 👆 ユーザーにカーソルを乗せたときのスタイル */
+.user:hover {
+  background-color: #f0f8ff;  /* 背景色を淡くして強調表示 */
+}
+
+/* 💬 右側：チャットメッセージ表示エリア */
+.chatArea {
+  color: #0070f3;             /* 文字色を青に */
+  flex: 1;                    /* 残りの横幅をすべて使う */
+  display: flex;              /* 子要素を縦に並べる準備 */
+  flex-direction: column;
+  padding: 20px;              /* 内側に余白 */
+  background-color: #fff;     /* 背景を白にする（メインエリア） */
+}
+
+.chatArea h3 {
+  margin-bottom: 16px;
+}
+
+/* 📨 メッセージ一覧を縦に並べる領域 */
+.messages {
+  color: #0070f3;             /* メッセージの文字色も青に */
+  flex: 1;                    /* 高さを可能な限り使う */
+  overflow-y: auto;           /* メッセージが多いときにスクロールする */
+  margin-bottom: 20px;        /* 下に余白（フォームを置くため） */
+}
+
+
+/* ✉️ 個別のメッセージボックス */
+.message {
+  padding: 10px;              /* メッセージ内の余白 */
+  margin-bottom: 10px;        /* メッセージ同士の間隔 */
+  background-color: #f0f8ff;  /* 背景を淡い青に（やさしい印象） */
+  border-radius: 6px;         /* 角を丸める */
+  box-shadow: 2px 0 4px rgba(0, 0, 0, 0.1); /* 左側に影（立体感） */
+  font-size: 16px; /* メッセージ本文のフォントサイズ */
+}
+
+/* 📝 メッセージ入力欄と送信ボタンを包むコンテナ */
+.inputArea {
+  display: flex;              /* 横並びにする */
+  gap: 8px;                   /* 要素間の余白 */
+}
+
+/* 💬 メッセージ入力欄 */
+.messageInput {
+  flex: 1;                    /* 空いているスペースを全部使う */
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px; /*メッセージ入力のフォントサイズ*/
+}
+
+/* 📤 送信ボタン */
+.sendButton {
+  padding: 10px 16px;
+  background-color: #0070f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
