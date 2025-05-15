@@ -1,43 +1,58 @@
-// app/login/page.tsx
 'use client'
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from './login.module.css'; // CSSモジュールを読み込む
+import styles from './login.module.css';
+import api from '@/lib/api'; // ← APIクライアントを使う
+import { saveToken } from '@/lib/auth'; // ← JWT保存用関数
 
 export default function LoginPage() {
-  // ユーザー名とパスワードの状態（入力値を保持）
-  const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  // ページ遷移用のルーター（ログイン画面へ移動するため）
+  const [error, setError] = useState('');
   const router = useRouter();
 
-  // フォームが送信されたときの処理
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // ページがリロードされるのを防ぐ
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
 
-    console.log({ username, password }); // 入力内容を確認（API接続は後ほど）
+    try {
+      // ✅ APIにログイン情報を送信
+      const res = await api.post('/login', {
+        email: email,
+        password: password,
+      });
 
-    // 成功したと仮定してログイン画面へ移動
-    router.push('/chat');
+      console.log('レスポンス:', res.data); // ← ここで中身を確認！
+
+      // ✅ JWTトークンを取得して保存
+      const token = res.data.token;
+      saveToken(token);
+
+      // ✅ 成功したらチャット画面へ
+      router.push('/chat');
+    } catch (err: any) {
+      console.error(err);
+      setError('ログインに失敗しました。メールアドレスまたはパスワードを確認してください。');
+    }
   };
 
   return (
-    // 🔲 全体ラッパー（中央寄せ用）
     <div className={styles.wrapper}>
-      {/* 📦 中央に表示される白いフォームボックス */}
       <div className={styles.container}>
         <h1 className={styles.title}>ログイン</h1>
+
+        {/* エラー表示 */}
+        {error && <p style={{ color: 'red', marginBottom: 10 }}>{error}</p>}
+
         <form onSubmit={handleSubmit}>
-          {/* 👤 ユーザー名入力欄 */}
           <input
-            placeholder="ユーザー名"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            type="email"
+            placeholder="メールアドレス"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             className={styles.input}
           />
-          {/* 🔐 パスワード入力欄 */}
           <input
             type="password"
             placeholder="パスワード"
@@ -45,7 +60,6 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             className={styles.input}
           />
-          {/* 🔘 ログイン */}
           <button type="submit" className={styles.button}>ログイン</button>
         </form>
       </div>

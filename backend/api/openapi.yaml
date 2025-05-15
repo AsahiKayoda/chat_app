@@ -20,6 +20,14 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SignupResponse'
+                
+        '400':
+          description: Username already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
         default:
           description: Error response
           content:
@@ -116,10 +124,14 @@ components:
       type: object
       required:
         - name
+        - email
         - password
       properties:
         name:
           type: string
+        email:
+          type: string
+          format: email
         password:
           type: string
           
@@ -130,29 +142,38 @@ components:
           type: integer
         name:
           type: string
+        email:
+          type: string
+          format: email
       required:
         - id
         - name
+        - email
 
     User:
       type: object
       required:
         - id
         - name
+        - email
       properties:
         id:
           type: integer
         name:
           type: string
+        email:
+          type: string
+          format: email
 
     LoginRequest:
       type: object
       required:
-        - name
+        - email
         - password
       properties:
-        name:
+        email:
           type: string
+          format: email
         password:
           type: string
 
@@ -167,10 +188,15 @@ components:
     Error:
       type: object
       required:
+        - code
         - message
       properties:
+        code:
+          type: integer
+          description: HTTP status code
         message:
           type: string
+          description: Human-readable error message
 
     Message:
       type: object

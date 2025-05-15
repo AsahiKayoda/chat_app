@@ -1,43 +1,67 @@
-// app/signup/page.tsx
 'use client'
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from './signup.module.css'; // CSSモジュールを読み込む
+import styles from './signup.module.css';
+import api from '@/lib/api'; // ✅ APIをインポート
 
 export default function SignupPage() {
-  // ユーザー名とパスワードの状態（入力値を保持）
   const [username, setUsername] = useState('');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-
-  // ページ遷移用のルーター（ログイン画面へ移動するため）
+  const [error, setError] = useState('');
   const router = useRouter();
 
-  // フォームが送信されたときの処理
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault(); // ページがリロードされるのを防ぐ
+  // ✅ フォーム送信時にAPIを叩く
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(''); // エラーリセット
 
-    console.log({ username, password }); // 入力内容を確認（API接続は後ほど）
+    try {
+      // ✅ POST /signup APIを呼び出す（バックエンドに新規ユーザー登録）
+      await api.post('/signup', {
+        name: username,
+        email: email,
+        password: password,
+      });
 
-    // 成功したと仮定してログイン画面へ移動
-    router.push('/login');
+      // 成功したらログイン画面へ遷移
+      router.push('/login');
+    } catch (err: any) {
+      console.error(err);
+      // サーバーから返ってきたエラー内容（例: SQLSTATE 23505など）
+      const rawMessage = err?.response?.data?.error_message ?? '';
+
+      if (rawMessage.includes('23505') || rawMessage.includes('unique constraint')) {
+        setError('このメールアドレスはすでに使われています。');
+      } else {
+        setError('サインアップに失敗しました。しばらくしてからもう一度お試しください。');
+      }
+    }
   };
 
   return (
-    // 🔲 全体ラッパー（中央寄せ用）
     <div className={styles.wrapper}>
-      {/* 📦 中央に表示される白いフォームボックス */}
       <div className={styles.container}>
         <h1 className={styles.title}>サインアップ</h1>
+
+        {/* エラー表示（あれば） */}
+        {error && <p style={{ color: 'red', marginBottom: 10 }}>{error}</p>}
+
         <form onSubmit={handleSubmit}>
-          {/* 👤 ユーザー名入力欄 */}
           <input
             placeholder="ユーザー名"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
             className={styles.input}
           />
-          {/* 🔐 パスワード入力欄 */}
+          <input
+            type="email"
+            placeholder="メールアドレス"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={styles.input}
+          />
           <input
             type="password"
             placeholder="パスワード"
@@ -45,7 +69,6 @@ export default function SignupPage() {
             onChange={(e) => setPassword(e.target.value)}
             className={styles.input}
           />
-          {/* 🔘 登録ボタン */}
           <button type="submit" className={styles.button}>登録</button>
         </form>
       </div>

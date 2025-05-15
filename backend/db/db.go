@@ -23,6 +23,7 @@ func Connect() error {//データベースとmain.goをつなげる関数
 type UserModel struct {
 	ID           uint      `gorm:"primaryKey"`
 	Username     string    `gorm:"not null"`
+	Email        string    `gorm:"not null;unique"`
 	PasswordHash string    `gorm:"not null"`
 }
 

@@ -11,6 +11,9 @@ import (
 
 // POST /messages - メッセージ送信
 func (h *HandlerImpl) MessagesPost(ctx context.Context, req *gen.MessageInput) (*gen.Message, error) {
+
+
+	
 	senderID := 1 // 仮のログインユーザー（後でJWTから取得する予定）
 
 	msg := db.MessageModel{

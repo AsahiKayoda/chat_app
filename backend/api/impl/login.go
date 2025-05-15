@@ -16,9 +16,9 @@ var jwtSecret = []byte(getEnv("JWT_SECRET", "secret"))
 
 // POST /login 実装
 func (h *HandlerImpl) LoginPost(ctx context.Context, req *gen.LoginRequest) (gen.LoginPostRes, error) {
-	// ユーザー名でDB検索
+	// emailでDB検索
 	var user db.UserModel
-	if result := db.DB.Where("username = ?", req.Name).First(&user); result.Error != nil {
+	if result := db.DB.Where("email = ?", req.Email).First(&user); result.Error != nil {
 		// 認証失敗（例: ユーザー存在しない）
 		return nil, result.Error
 	}
