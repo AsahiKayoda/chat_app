@@ -103,7 +103,7 @@ paths:
     get:
       summary: Get messages with a user
       parameters:
-        - name: receiver_id
+        - name: room_id
           in: query
           required: true
           schema:
@@ -155,15 +155,11 @@ components:
       required:
         - id
         - name
-        - email
       properties:
         id:
           type: integer
         name:
           type: string
-        email:
-          type: string
-          format: email
 
     LoginRequest:
       type: object
@@ -198,12 +194,24 @@ components:
           type: string
           description: Human-readable error message
 
+    MessageInput:
+      type: object
+      required:
+        - room_id
+        - text
+      properties:
+        room_id:
+          type: integer
+        text:
+          type: string
+
+
     Message:
       type: object
       required:
         - id
         - sender_id
-        - receiver_id
+        - room_id
         - text
         - timestamp
       properties:
@@ -211,21 +219,10 @@ components:
           type: integer
         sender_id:
           type: integer
-        receiver_id:
+        room_id:
           type: integer
         text:
           type: string
         timestamp:
           type: string
           format: date-time
-
-    MessageInput:
-      type: object
-      required:
-        - receiver_id
-        - text
-      properties:
-        receiver_id:
-          type: integer
-        text:
-          type: string

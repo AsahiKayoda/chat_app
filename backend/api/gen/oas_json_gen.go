@@ -353,8 +353,8 @@ func (s *Message) encodeFields(e *jx.Encoder) {
 		e.Int(s.SenderID)
 	}
 	{
-		e.FieldStart("receiver_id")
-		e.Int(s.ReceiverID)
+		e.FieldStart("room_id")
+		e.Int(s.RoomID)
 	}
 	{
 		e.FieldStart("text")
@@ -369,7 +369,7 @@ func (s *Message) encodeFields(e *jx.Encoder) {
 var jsonFieldsNameOfMessage = [5]string{
 	0: "id",
 	1: "sender_id",
-	2: "receiver_id",
+	2: "room_id",
 	3: "text",
 	4: "timestamp",
 }
@@ -407,17 +407,17 @@ func (s *Message) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"sender_id\"")
 			}
-		case "receiver_id":
+		case "room_id":
 			requiredBitSet[0] |= 1 << 2
 			if err := func() error {
 				v, err := d.Int()
-				s.ReceiverID = int(v)
+				s.RoomID = int(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"receiver_id\"")
+				return errors.Wrap(err, "decode field \"room_id\"")
 			}
 		case "text":
 			requiredBitSet[0] |= 1 << 3
@@ -509,8 +509,8 @@ func (s *MessageInput) Encode(e *jx.Encoder) {
 // encodeFields encodes fields.
 func (s *MessageInput) encodeFields(e *jx.Encoder) {
 	{
-		e.FieldStart("receiver_id")
-		e.Int(s.ReceiverID)
+		e.FieldStart("room_id")
+		e.Int(s.RoomID)
 	}
 	{
 		e.FieldStart("text")
@@ -519,7 +519,7 @@ func (s *MessageInput) encodeFields(e *jx.Encoder) {
 }
 
 var jsonFieldsNameOfMessageInput = [2]string{
-	0: "receiver_id",
+	0: "room_id",
 	1: "text",
 }
 
@@ -532,17 +532,17 @@ func (s *MessageInput) Decode(d *jx.Decoder) error {
 
 	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
 		switch string(k) {
-		case "receiver_id":
+		case "room_id":
 			requiredBitSet[0] |= 1 << 0
 			if err := func() error {
 				v, err := d.Int()
-				s.ReceiverID = int(v)
+				s.RoomID = int(v)
 				if err != nil {
 					return err
 				}
 				return nil
 			}(); err != nil {
-				return errors.Wrap(err, "decode field \"receiver_id\"")
+				return errors.Wrap(err, "decode field \"room_id\"")
 			}
 		case "text":
 			requiredBitSet[0] |= 1 << 1
@@ -759,16 +759,11 @@ func (s *User) encodeFields(e *jx.Encoder) {
 		e.FieldStart("name")
 		e.Str(s.Name)
 	}
-	{
-		e.FieldStart("email")
-		e.Str(s.Email)
-	}
 }
 
-var jsonFieldsNameOfUser = [3]string{
+var jsonFieldsNameOfUser = [2]string{
 	0: "id",
 	1: "name",
-	2: "email",
 }
 
 // Decode decodes User from json.
@@ -804,18 +799,6 @@ func (s *User) Decode(d *jx.Decoder) error {
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"name\"")
 			}
-		case "email":
-			requiredBitSet[0] |= 1 << 2
-			if err := func() error {
-				v, err := d.Str()
-				s.Email = string(v)
-				if err != nil {
-					return err
-				}
-				return nil
-			}(); err != nil {
-				return errors.Wrap(err, "decode field \"email\"")
-			}
 		default:
 			return d.Skip()
 		}
@@ -826,7 +809,7 @@ func (s *User) Decode(d *jx.Decoder) error {
 	// Validate required fields.
 	var failures []validate.FieldError
 	for i, mask := range [1]uint8{
-		0b00000111,
+		0b00000011,
 	} {
 		if result := (requiredBitSet[i] & mask) ^ mask; result != 0 {
 			// Mask only required fields and check equality to mask using XOR.

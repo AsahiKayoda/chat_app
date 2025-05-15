@@ -13,26 +13,26 @@ import (
 
 // MessagesGetParams is parameters of GET /messages operation.
 type MessagesGetParams struct {
-	ReceiverID int
+	RoomID int
 }
 
 func unpackMessagesGetParams(packed middleware.Parameters) (params MessagesGetParams) {
 	{
 		key := middleware.ParameterKey{
-			Name: "receiver_id",
+			Name: "room_id",
 			In:   "query",
 		}
-		params.ReceiverID = packed[key].(int)
+		params.RoomID = packed[key].(int)
 	}
 	return params
 }
 
 func decodeMessagesGetParams(args [0]string, argsEscaped bool, r *http.Request) (params MessagesGetParams, _ error) {
 	q := uri.NewQueryDecoder(r.URL.Query())
-	// Decode query: receiver_id.
+	// Decode query: room_id.
 	if err := func() error {
 		cfg := uri.QueryParameterDecodingConfig{
-			Name:    "receiver_id",
+			Name:    "room_id",
 			Style:   uri.QueryStyleForm,
 			Explode: true,
 		}
@@ -49,7 +49,7 @@ func decodeMessagesGetParams(args [0]string, argsEscaped bool, r *http.Request) 
 					return err
 				}
 
-				params.ReceiverID = c
+				params.RoomID = c
 				return nil
 			}); err != nil {
 				return err
@@ -60,7 +60,7 @@ func decodeMessagesGetParams(args [0]string, argsEscaped bool, r *http.Request) 
 		return nil
 	}(); err != nil {
 		return params, &ogenerrors.DecodeParamError{
-			Name: "receiver_id",
+			Name: "room_id",
 			In:   "query",
 			Err:  err,
 		}

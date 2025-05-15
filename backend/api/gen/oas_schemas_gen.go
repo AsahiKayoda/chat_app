@@ -112,11 +112,11 @@ func (*LoginResponse) loginPostRes() {}
 
 // Ref: #/components/schemas/Message
 type Message struct {
-	ID         int       `json:"id"`
-	SenderID   int       `json:"sender_id"`
-	ReceiverID int       `json:"receiver_id"`
-	Text       string    `json:"text"`
-	Timestamp  time.Time `json:"timestamp"`
+	ID        int       `json:"id"`
+	SenderID  int       `json:"sender_id"`
+	RoomID    int       `json:"room_id"`
+	Text      string    `json:"text"`
+	Timestamp time.Time `json:"timestamp"`
 }
 
 // GetID returns the value of ID.
@@ -129,9 +129,9 @@ func (s *Message) GetSenderID() int {
 	return s.SenderID
 }
 
-// GetReceiverID returns the value of ReceiverID.
-func (s *Message) GetReceiverID() int {
-	return s.ReceiverID
+// GetRoomID returns the value of RoomID.
+func (s *Message) GetRoomID() int {
+	return s.RoomID
 }
 
 // GetText returns the value of Text.
@@ -154,9 +154,9 @@ func (s *Message) SetSenderID(val int) {
 	s.SenderID = val
 }
 
-// SetReceiverID sets the value of ReceiverID.
-func (s *Message) SetReceiverID(val int) {
-	s.ReceiverID = val
+// SetRoomID sets the value of RoomID.
+func (s *Message) SetRoomID(val int) {
+	s.RoomID = val
 }
 
 // SetText sets the value of Text.
@@ -171,13 +171,13 @@ func (s *Message) SetTimestamp(val time.Time) {
 
 // Ref: #/components/schemas/MessageInput
 type MessageInput struct {
-	ReceiverID int    `json:"receiver_id"`
-	Text       string `json:"text"`
+	RoomID int    `json:"room_id"`
+	Text   string `json:"text"`
 }
 
-// GetReceiverID returns the value of ReceiverID.
-func (s *MessageInput) GetReceiverID() int {
-	return s.ReceiverID
+// GetRoomID returns the value of RoomID.
+func (s *MessageInput) GetRoomID() int {
+	return s.RoomID
 }
 
 // GetText returns the value of Text.
@@ -185,9 +185,9 @@ func (s *MessageInput) GetText() string {
 	return s.Text
 }
 
-// SetReceiverID sets the value of ReceiverID.
-func (s *MessageInput) SetReceiverID(val int) {
-	s.ReceiverID = val
+// SetRoomID sets the value of RoomID.
+func (s *MessageInput) SetRoomID(val int) {
+	s.RoomID = val
 }
 
 // SetText sets the value of Text.
@@ -236,9 +236,8 @@ func (*SignupResponse) signupPostRes() {}
 
 // Ref: #/components/schemas/User
 type User struct {
-	ID    int    `json:"id"`
-	Name  string `json:"name"`
-	Email string `json:"email"`
+	ID   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 // GetID returns the value of ID.
@@ -251,11 +250,6 @@ func (s *User) GetName() string {
 	return s.Name
 }
 
-// GetEmail returns the value of Email.
-func (s *User) GetEmail() string {
-	return s.Email
-}
-
 // SetID sets the value of ID.
 func (s *User) SetID(val int) {
 	s.ID = val
@@ -264,11 +258,6 @@ func (s *User) SetID(val int) {
 // SetName sets the value of Name.
 func (s *User) SetName(val string) {
 	s.Name = val
-}
-
-// SetEmail sets the value of Email.
-func (s *User) SetEmail(val string) {
-	s.Email = val
 }
 
 // Ref: #/components/schemas/UserInput

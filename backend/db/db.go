@@ -32,13 +32,16 @@ func (UserModel) TableName() string {
 }
 
 type MessageModel struct {
-	ID         uint      `gorm:"primaryKey"`
-	SenderID   uint      `gorm:"not null"`
-	ReceiverID uint      `gorm:"not null"`
-	Text       string    `gorm:"not null"`
-	Timestamp  time.Time `gorm:"autoCreateTime"`
+	ID            uint      `gorm:"primaryKey"`
+	RoomID        int       `gorm:"not null"`
+	SenderID      int       `gorm:"not null"`
+	Content       string    `gorm:"not null"`
+	CreatedAt     time.Time `gorm:"autoCreateTime"`
+	UpdatedAt     time.Time `gorm:"autoUpdateTime"`
+	ThreadRootID  *int      // スレッド機能用（NULL許容）
 }
 
+// テーブル名を明示
 func (MessageModel) TableName() string {
 	return "messages"
 }

@@ -2,9 +2,12 @@ package impl
 
 import (
 	"context"
+	"errors"
+	"time"
 
 	"backend/db"
 	gen "backend/api/gen"
+	"backend/middleware" // ← contextから userID 取得
 )
 
 //type HandlerImpl struct{}
@@ -14,12 +17,17 @@ func (h *HandlerImpl) MessagesPost(ctx context.Context, req *gen.MessageInput) (
 
 
 	
-	senderID := 1 // 仮のログインユーザー（後でJWTから取得する予定）
+	senderID, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, errors.New("unauthorized (no user ID in context)")
+	}
 
+	// DBモデルに保存
 	msg := db.MessageModel{
-		SenderID:   uint(senderID),
-		ReceiverID: uint(req.ReceiverID),
-		Text:       req.Text,
+		RoomID:    int(req.RoomID),
+		SenderID:  senderID,
+		Content:   req.Text,
+		CreatedAt: time.Now(),
 	}
 
 	if result := db.DB.Create(&msg); result.Error != nil {
@@ -30,21 +38,24 @@ func (h *HandlerImpl) MessagesPost(ctx context.Context, req *gen.MessageInput) (
 	return &gen.Message{
 		ID:         int(msg.ID),
 		SenderID:   int(msg.SenderID),
-		ReceiverID: int(msg.ReceiverID),
-		Text:       msg.Text,
-		Timestamp:  msg.Timestamp,
+		RoomID:    int(msg.RoomID),
+		Text:       msg.Content,
+		Timestamp:  msg.CreatedAt,
 	}, nil
 }
 
 // GET /messages?receiver_id=X - メッセージ取得（相手とのやり取り）
 func (h *HandlerImpl) MessagesGet(ctx context.Context, params gen.MessagesGetParams) ([]gen.Message, error) {
-	senderID := 1 // JWTのトーク保有者のIDが代入される
+	// ✅ JWTから senderID を取得
+	_, ok := middleware.GetUserIDFromContext(ctx)
+	if !ok {
+		return nil, errors.New("unauthorized")
+	}
 
 	var messages []db.MessageModel
 	if result := db.DB.
-		Where("(sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)",
-			senderID, params.ReceiverID, params.ReceiverID, senderID).
-		Order("timestamp asc").// 時系列順にソート
+		Where("room_id = ?", params.RoomID).
+		Order("created_at asc").
 		Find(&messages); result.Error != nil {
 		return nil, result.Error
 	}
@@ -55,9 +66,9 @@ func (h *HandlerImpl) MessagesGet(ctx context.Context, params gen.MessagesGetPar
 		resp = append(resp, gen.Message{
 			ID:         int(m.ID),
 			SenderID:   int(m.SenderID),
-			ReceiverID: int(m.ReceiverID),
-			Text:       m.Text,
-			Timestamp:  m.Timestamp,
+			RoomID:    int(m.RoomID),
+			Text:      m.Content,
+			Timestamp: m.CreatedAt,
 		})
 	}
 

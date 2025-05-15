@@ -260,9 +260,9 @@ func (s *Server) handleMessagesGetRequest(args [0]string, argsEscaped bool, w ht
 			Body:             nil,
 			Params: middleware.Parameters{
 				{
-					Name: "receiver_id",
+					Name: "room_id",
 					In:   "query",
-				}: params.ReceiverID,
+				}: params.RoomID,
 			},
 			Raw: r,
 		}

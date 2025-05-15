@@ -31,7 +31,7 @@ func (h *HandlerImpl) LoginPost(ctx context.Context, req *gen.LoginRequest) (gen
 
 	// JWTトークン生成（24時間有効）
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"sub": user.ID,
+		"user_id": user.ID,
 		"exp": time.Now().Add(24 * time.Hour).Unix(),
 	})
 

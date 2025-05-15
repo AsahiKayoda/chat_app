@@ -228,15 +228,15 @@ func (c *Client) sendMessagesGet(ctx context.Context, params MessagesGetParams) 
 	stage = "EncodeQueryParams"
 	q := uri.NewQueryEncoder()
 	{
-		// Encode "receiver_id" parameter.
+		// Encode "room_id" parameter.
 		cfg := uri.QueryParameterEncodingConfig{
-			Name:    "receiver_id",
+			Name:    "room_id",
 			Style:   uri.QueryStyleForm,
 			Explode: true,
 		}
 
 		if err := q.EncodeParam(cfg, func(e uri.Encoder) error {
-			return e.EncodeValue(conv.IntToString(params.ReceiverID))
+			return e.EncodeValue(conv.IntToString(params.RoomID))
 		}); err != nil {
 			return res, errors.Wrap(err, "encode query")
 		}

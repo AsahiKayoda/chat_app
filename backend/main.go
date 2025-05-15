@@ -3,55 +3,69 @@ package main
 import (
 	"log"
 	"net/http"
+	"os"
 
-	"backend/db"
 	gen "backend/api/gen"
-	impl "backend/api/impl"
+	"backend/api/impl"
+	"backend/db"
+	"backend/middleware" //JWTミドルウェア
 )
 
-// ✅ CORSを許可するミドルウェア（開発用）
+// ✅ 開発用CORSミドルウェア
 func withCORS(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// 全てのオリジンを許可（本番では限定するのがベター）
+		// 全オリジン許可（本番では制限推奨）
 		w.Header().Set("Access-Control-Allow-Origin", "*")
 
-		// クライアントから送られるヘッダーを許可
+		// 使用を許可するヘッダー
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 
 		// 許可するHTTPメソッド
 		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
 
-		// Preflightリクエスト（OPTIONS）への対応
+		// Preflight（OPTIONS）対応
 		if r.Method == "OPTIONS" {
 			w.WriteHeader(http.StatusOK)
 			return
 		}
 
-		// 実際のハンドラーに処理を渡す
+		// 次のミドルウェア or 実処理へ
 		h.ServeHTTP(w, r)
 	})
 }
 
 func main() {
-	// DB接続
+	// ✅ JWT_SECRETを環境変数から取得
+	secret := os.Getenv("JWT_SECRET")
+	if secret == "" {
+		log.Fatal("❌ JWT_SECRET が設定されていません")
+	}
+
+	// ✅ DB接続
 	if err := db.Connect(); err != nil {
 		log.Fatalf("❌ データベース接続に失敗: %v", err)
 	}
 	log.Println("✅ データベース接続成功")
 
-	// Handler を実装にバインド
+	// ✅ Handler 実装
 	handler := &impl.HandlerImpl{}
 
-	// ogen が生成した HTTPサーバを取得
+	// ✅ ogen が生成した http.Handler を取得
 	server, err := gen.NewServer(handler)
 	if err != nil {
 		log.Fatalf("❌ サーバー生成に失敗: %v", err)
 	}
-	log.Println("✅ サーバー構築成功4")
+	log.Println("✅ ogen サーバー構築成功")
 
-	// ✅ CORSミドルウェアを通してサーバー起動
+	// ✅ JWT認証ミドルウェアでラップ（JWT → ogen）
+	jwtWrapped := middleware.JWTAuthMiddleware(secret)(server)
+
+	// ✅ CORSミドルウェアでさらにラップ（CORS → JWT → ogen）
+	finalHandler := withCORS(jwtWrapped)
+
+	// ✅ 最終ハンドラーでサーバー起動
 	log.Println("🚀 サーバー起動: http://localhost:8080")
-	if err := http.ListenAndServe(":8080", withCORS(server)); err != nil {
+	if err := http.ListenAndServe(":8080", finalHandler); err != nil {
 		log.Fatalf("❌ サーバー起動エラー: %v", err)
 	}
 }
