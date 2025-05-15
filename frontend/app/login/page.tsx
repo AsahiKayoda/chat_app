@@ -25,8 +25,14 @@ export default function LoginPage() {
 
       console.log('レスポンス:', res.data); // ← ここで中身を確認！
 
-      // ✅ JWTトークンを取得して保存
-      const token = res.data.token;
+      // ✅ トークンがレスポンスに含まれているかチェック
+      const token = res.data?.token;
+      if (!token) {
+        setError('トークンが取得できませんでした');
+        return;
+      }
+
+      // ✅ JWTトークンを保存
       saveToken(token);
 
       // ✅ 成功したらチャット画面へ

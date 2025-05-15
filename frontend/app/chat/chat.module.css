@@ -91,3 +91,25 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+.message {
+  padding: 10px 14px;
+  margin: 10px 0;           /* ✅ 上下の余白を大きく */
+  border-radius: 12px;
+  max-width: 60%;
+  word-wrap: break-word;
+  line-height: 1.4;         /* ✅ 行間も読みやすく */
+}
+
+.sent {
+  background-color: #e4f1ff;
+  align-self: flex-end;
+  margin-left: auto;
+}
+/* 👑 メッセージバーの見出しの下に余白を空ける */
+
+.received {
+  background-color: #f1f0f0;
+  align-self: flex-start;
+  margin-right: auto;
+}

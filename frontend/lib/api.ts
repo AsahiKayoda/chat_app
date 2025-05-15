@@ -1,27 +1,23 @@
-//axios の設定や API 共通関数
-//axiosはfetchより簡単だけどメモリの使用量が多い
+// lib/api.ts
 import axios from 'axios';
+import { getToken } from './auth';
 
-
-
-// ✅ Axios のインスタンスを作成（共通の設定をまとめる）
 const api = axios.create({
-  baseURL: 'http://localhost:8080', // ← Go の API サーバーのURL（Dockerで起動してるAPI）
+  baseURL: 'http://localhost:8080',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// ✅ トークンをセットする関数（ログイン後に使う）
-export function setAuthToken(token: string) {
-  // 全てのリクエストに Authorization ヘッダーを追加する
-  api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-}
+// ✅ 毎回のリクエスト前にトークンを自動でヘッダーに追加する
+api.interceptors.request.use((config) => {
+  if (typeof window !== 'undefined') {
+    const token = getToken();
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+  }
+  return config;
+});
 
-// ✅ トークンを消す関数（ログアウト時など）
-export function clearAuthToken() {
-  delete api.defaults.headers.common['Authorization'];
-}
-
-// ✅ API本体（import して使う用）
 export default api;
