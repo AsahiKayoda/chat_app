@@ -6,6 +6,58 @@ import (
 	"time"
 )
 
+// Ref: #/components/schemas/ChatRoom
+type ChatRoom struct {
+	ID        int       `json:"id"`
+	IsGroup   bool      `json:"is_group"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// GetID returns the value of ID.
+func (s *ChatRoom) GetID() int {
+	return s.ID
+}
+
+// GetIsGroup returns the value of IsGroup.
+func (s *ChatRoom) GetIsGroup() bool {
+	return s.IsGroup
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *ChatRoom) GetCreatedAt() time.Time {
+	return s.CreatedAt
+}
+
+// SetID sets the value of ID.
+func (s *ChatRoom) SetID(val int) {
+	s.ID = val
+}
+
+// SetIsGroup sets the value of IsGroup.
+func (s *ChatRoom) SetIsGroup(val bool) {
+	s.IsGroup = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *ChatRoom) SetCreatedAt(val time.Time) {
+	s.CreatedAt = val
+}
+
+// Ref: #/components/schemas/ChatRoomInput
+type ChatRoomInput struct {
+	TargetUserID int `json:"target_user_id"`
+}
+
+// GetTargetUserID returns the value of TargetUserID.
+func (s *ChatRoomInput) GetTargetUserID() int {
+	return s.TargetUserID
+}
+
+// SetTargetUserID sets the value of TargetUserID.
+func (s *ChatRoomInput) SetTargetUserID(val int) {
+	s.TargetUserID = val
+}
+
 // Ref: #/components/schemas/Error
 type Error struct {
 	// HTTP status code.

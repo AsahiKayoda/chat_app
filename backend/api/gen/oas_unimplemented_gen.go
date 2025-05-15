@@ -13,6 +13,15 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
+// ChatRoomsPost implements POST /chat-rooms operation.
+//
+// Create or fetch a 1:1 chat room.
+//
+// POST /chat-rooms
+func (UnimplementedHandler) ChatRoomsPost(ctx context.Context, req *ChatRoomInput) (r *ChatRoom, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // LoginPost implements POST /login operation.
 //
 // Login.

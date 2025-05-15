@@ -60,6 +60,26 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				break
 			}
 			switch elem[0] {
+			case 'c': // Prefix: "chat-rooms"
+
+				if l := len("chat-rooms"); len(elem) >= l && elem[0:l] == "chat-rooms" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch r.Method {
+					case "POST":
+						s.handleChatRoomsPostRequest([0]string{}, elemIsEscaped, w, r)
+					default:
+						s.notAllowed(w, r, "POST")
+					}
+
+					return
+				}
+
 			case 'l': // Prefix: "login"
 
 				if l := len("login"); len(elem) >= l && elem[0:l] == "login" {
@@ -236,6 +256,30 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				break
 			}
 			switch elem[0] {
+			case 'c': // Prefix: "chat-rooms"
+
+				if l := len("chat-rooms"); len(elem) >= l && elem[0:l] == "chat-rooms" {
+					elem = elem[l:]
+				} else {
+					break
+				}
+
+				if len(elem) == 0 {
+					// Leaf node.
+					switch method {
+					case "POST":
+						r.name = ChatRoomsPostOperation
+						r.summary = "Create or fetch a 1:1 chat room"
+						r.operationID = ""
+						r.pathPattern = "/chat-rooms"
+						r.args = args
+						r.count = 0
+						return r, true
+					default:
+						return
+					}
+				}
+
 			case 'l': // Prefix: "login"
 
 				if l := len("login"); len(elem) >= l && elem[0:l] == "login" {

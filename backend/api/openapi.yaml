@@ -118,6 +118,24 @@ paths:
                 items:
                   $ref: '#/components/schemas/Message'
 
+  /chat-rooms:
+    post:
+      summary: Create or fetch a 1:1 chat room
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatRoomInput'
+      responses:
+        '201':
+          description: Room created or reused
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatRoom'
+
+
 components:
   schemas:
     UserInput:
@@ -226,3 +244,28 @@ components:
         timestamp:
           type: string
           format: date-time
+
+    ChatRoomInput:
+      type: object
+      required:
+        - target_user_id
+      properties:
+        target_user_id:
+          type: integer
+
+    ChatRoom:
+      type: object
+      required:
+        - id
+        - is_group
+        - created_at
+      properties:
+        id:
+          type: integer
+        is_group:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+
+

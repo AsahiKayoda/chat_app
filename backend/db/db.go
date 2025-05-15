@@ -45,3 +45,27 @@ type MessageModel struct {
 func (MessageModel) TableName() string {
 	return "messages"
 }
+
+type ChatRoomModel struct {
+	ID        uint       `gorm:"primaryKey"`                // ルームID（PK）
+	RoomName  *string    `gorm:"type:varchar(100);default:null"` // グループ名（1:1のときはNULL）
+	IsGroup   bool       `gorm:"not null;default:false"`    // true:グループ, false:1:1
+	CreatedAt time.Time  `gorm:"autoCreateTime"`            // 作成日時
+	UpdatedAt time.Time  `gorm:"autoUpdateTime"`            // 更新日時
+}
+
+// 明示的にテーブル名を指定
+func (ChatRoomModel) TableName() string {
+	return "chat_rooms"
+}
+
+type RoomMemberModel struct {
+	RoomID   int       `gorm:"primaryKey"`      // 複合PKの一部
+	UserID   int       `gorm:"primaryKey"`      // 複合PKの一部
+	JoinedAt time.Time `gorm:"autoCreateTime"`  // 参加日時
+}
+
+// テーブル名を指定（デフォルトの複数形ではなく一致させるため）
+func (RoomMemberModel) TableName() string {
+	return "room_members"
+}

@@ -8,6 +8,12 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
+	// ChatRoomsPost implements POST /chat-rooms operation.
+	//
+	// Create or fetch a 1:1 chat room.
+	//
+	// POST /chat-rooms
+	ChatRoomsPost(ctx context.Context, req *ChatRoomInput) (*ChatRoom, error)
 	// LoginPost implements POST /login operation.
 	//
 	// Login.
