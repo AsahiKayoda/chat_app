@@ -32,6 +32,19 @@ export function useChatRoom() {
 
     fetchUsers();
   }, []);
+  
+  useEffect(() => {
+    const autoSelectFirstUser = async () => {
+      if (users.length > 0 && !selectedUser) {
+        try {
+          handleSelectUser(users[0]);
+        } catch (err) {
+          setError('初期ユーザーのチャットルーム取得に失敗しました');
+        }
+      }
+    };
+    autoSelectFirstUser();
+  }, [users, selectedUser]);
 
   // ✅ roomId が更新されたときにメッセージを取得
   useEffect(() => {
