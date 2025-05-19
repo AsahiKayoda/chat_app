@@ -8,12 +8,24 @@ import (
 
 // Handler handles operations described by OpenAPI v3 specification.
 type Handler interface {
-	// ChatRoomsPost implements POST /chat-rooms operation.
+	// ChatRoomsPost implements ChatRoomsPost operation.
 	//
-	// Create or fetch a 1:1 chat room.
+	// Create or get one-on-one chat room.
 	//
 	// POST /chat-rooms
-	ChatRoomsPost(ctx context.Context, req *ChatRoomInput) (*ChatRoom, error)
+	ChatRoomsPost(ctx context.Context, req *ChatRoomInput) (*ChatRoomsPostOK, error)
+	// CreateGroupChatRoom implements CreateGroupChatRoom operation.
+	//
+	// Create a new group chat room.
+	//
+	// POST /chat-rooms/groups
+	CreateGroupChatRoom(ctx context.Context, req *CreateGroupChatInput) (*ChatRoom, error)
+	// GetChatRooms implements GetChatRooms operation.
+	//
+	// Get all chat rooms the user belongs to.
+	//
+	// GET /chat-rooms
+	GetChatRooms(ctx context.Context) ([]ChatRoom, error)
 	// LoginPost implements POST /login operation.
 	//
 	// Login.

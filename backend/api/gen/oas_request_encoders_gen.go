@@ -25,6 +25,20 @@ func encodeChatRoomsPostRequest(
 	return nil
 }
 
+func encodeCreateGroupChatRoomRequest(
+	req *CreateGroupChatInput,
+	r *http.Request,
+) error {
+	const contentType = "application/json"
+	e := new(jx.Encoder)
+	{
+		req.Encode(e)
+	}
+	encoded := e.Bytes()
+	ht.SetBody(r, bytes.NewReader(encoded), contentType)
+	return nil
+}
+
 func encodeLoginPostRequest(
 	req *LoginRequest,
 	r *http.Request,

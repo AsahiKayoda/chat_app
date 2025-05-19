@@ -17,6 +17,7 @@ import (
 
 	"github.com/ogen-go/ogen/conv"
 	ht "github.com/ogen-go/ogen/http"
+	"github.com/ogen-go/ogen/otelogen"
 	"github.com/ogen-go/ogen/uri"
 )
 
@@ -27,12 +28,24 @@ func trimTrailingSlashes(u *url.URL) {
 
 // Invoker invokes operations described by OpenAPI v3 specification.
 type Invoker interface {
-	// ChatRoomsPost invokes POST /chat-rooms operation.
+	// ChatRoomsPost invokes ChatRoomsPost operation.
 	//
-	// Create or fetch a 1:1 chat room.
+	// Create or get one-on-one chat room.
 	//
 	// POST /chat-rooms
-	ChatRoomsPost(ctx context.Context, request *ChatRoomInput) (*ChatRoom, error)
+	ChatRoomsPost(ctx context.Context, request *ChatRoomInput) (*ChatRoomsPostOK, error)
+	// CreateGroupChatRoom invokes CreateGroupChatRoom operation.
+	//
+	// Create a new group chat room.
+	//
+	// POST /chat-rooms/groups
+	CreateGroupChatRoom(ctx context.Context, request *CreateGroupChatInput) (*ChatRoom, error)
+	// GetChatRooms invokes GetChatRooms operation.
+	//
+	// Get all chat rooms the user belongs to.
+	//
+	// GET /chat-rooms
+	GetChatRooms(ctx context.Context) ([]ChatRoom, error)
 	// LoginPost invokes POST /login operation.
 	//
 	// Login.
@@ -108,18 +121,19 @@ func (c *Client) requestURL(ctx context.Context) *url.URL {
 	return u
 }
 
-// ChatRoomsPost invokes POST /chat-rooms operation.
+// ChatRoomsPost invokes ChatRoomsPost operation.
 //
-// Create or fetch a 1:1 chat room.
+// Create or get one-on-one chat room.
 //
 // POST /chat-rooms
-func (c *Client) ChatRoomsPost(ctx context.Context, request *ChatRoomInput) (*ChatRoom, error) {
+func (c *Client) ChatRoomsPost(ctx context.Context, request *ChatRoomInput) (*ChatRoomsPostOK, error) {
 	res, err := c.sendChatRoomsPost(ctx, request)
 	return res, err
 }
 
-func (c *Client) sendChatRoomsPost(ctx context.Context, request *ChatRoomInput) (res *ChatRoom, err error) {
+func (c *Client) sendChatRoomsPost(ctx context.Context, request *ChatRoomInput) (res *ChatRoomsPostOK, err error) {
 	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("ChatRoomsPost"),
 		semconv.HTTPRequestMethodKey.String("POST"),
 		semconv.HTTPRouteKey.String("/chat-rooms"),
 	}
@@ -175,6 +189,153 @@ func (c *Client) sendChatRoomsPost(ctx context.Context, request *ChatRoomInput) 
 
 	stage = "DecodeResponse"
 	result, err := decodeChatRoomsPostResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// CreateGroupChatRoom invokes CreateGroupChatRoom operation.
+//
+// Create a new group chat room.
+//
+// POST /chat-rooms/groups
+func (c *Client) CreateGroupChatRoom(ctx context.Context, request *CreateGroupChatInput) (*ChatRoom, error) {
+	res, err := c.sendCreateGroupChatRoom(ctx, request)
+	return res, err
+}
+
+func (c *Client) sendCreateGroupChatRoom(ctx context.Context, request *CreateGroupChatInput) (res *ChatRoom, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("CreateGroupChatRoom"),
+		semconv.HTTPRequestMethodKey.String("POST"),
+		semconv.HTTPRouteKey.String("/chat-rooms/groups"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, CreateGroupChatRoomOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/chat-rooms/groups"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "POST", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+	if err := encodeCreateGroupChatRoomRequest(request, r); err != nil {
+		return res, errors.Wrap(err, "encode request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeCreateGroupChatRoomResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetChatRooms invokes GetChatRooms operation.
+//
+// Get all chat rooms the user belongs to.
+//
+// GET /chat-rooms
+func (c *Client) GetChatRooms(ctx context.Context) ([]ChatRoom, error) {
+	res, err := c.sendGetChatRooms(ctx)
+	return res, err
+}
+
+func (c *Client) sendGetChatRooms(ctx context.Context) (res []ChatRoom, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("GetChatRooms"),
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.HTTPRouteKey.String("/chat-rooms"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, GetChatRoomsOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/chat-rooms"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeGetChatRoomsResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

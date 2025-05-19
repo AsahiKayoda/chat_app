@@ -120,7 +120,8 @@ paths:
 
   /chat-rooms:
     post:
-      summary: Create or fetch a 1:1 chat room
+      summary: Create or get one-on-one chat room
+      operationId: ChatRoomsPost
       requestBody:
         required: true
         content:
@@ -128,8 +129,50 @@ paths:
             schema:
               $ref: '#/components/schemas/ChatRoomInput'
       responses:
-        '201':
-          description: Room created or reused
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - id
+                  - is_group
+                  - created_at
+                properties:
+                  id:
+                    type: integer
+                  is_group:
+                    type: boolean
+                  created_at:
+                    type: string
+                    format: date-time
+    get:
+      summary: Get all chat rooms the user belongs to
+      operationId: GetChatRooms
+      responses:
+        '200':
+          description: List of chat rooms
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ChatRoom'
+
+  /chat-rooms/groups:
+    post:
+      summary: Create a new group chat room
+      operationId: CreateGroupChatRoom
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGroupChatInput'
+      responses:
+        '200':
+          description: Group chat created
           content:
             application/json:
               schema:
@@ -253,19 +296,35 @@ components:
         target_user_id:
           type: integer
 
-    ChatRoom:
+    CreateGroupChatInput:
       type: object
       required:
-        - id
-        - is_group
-        - created_at
+        - room_name
+        - member_ids
+      properties:
+        room_name:
+          type: string
+        member_ids:
+          type: array
+          items:
+            type: integer
+
+    ChatRoom:
+      type: object
       properties:
         id:
           type: integer
+          nullable: true
+        room_name:
+          type: string
+          nullable: true
         is_group:
           type: boolean
+          nullable: true
         created_at:
           type: string
           format: date-time
+          nullable: true
+
 
 

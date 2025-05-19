@@ -60,9 +60,11 @@ func (ChatRoomModel) TableName() string {
 }
 
 type RoomMemberModel struct {
-	RoomID   int       `gorm:"primaryKey"`      // 複合PKの一部
-	UserID   int       `gorm:"primaryKey"`      // 複合PKの一部
+	RoomID   uint       `gorm:"primaryKey"`      // 複合PKの一部
+	UserID   uint      `gorm:"primaryKey"`      // 複合PKの一部
 	JoinedAt time.Time `gorm:"autoCreateTime"`  // 参加日時
+
+	
 }
 
 // テーブル名を指定（デフォルトの複数形ではなく一致させるため）

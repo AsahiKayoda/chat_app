@@ -2,16 +2,16 @@
 
 // ✅ トークンを保存
 export function saveToken(token: string) {
-  sessionStorage.setItem('token', token);
+  localStorage.setItem('token', token);
 }
 
 // lib/auth.ts
 export function getToken(): string | null {
-  return typeof window !== 'undefined' ? sessionStorage.getItem('token') : null;
+  return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
 }
 
 export function removeToken() {
   if (typeof window !== 'undefined') {
-    sessionStorage.removeItem('token');
+    localStorage.removeItem('token');
   }
 }

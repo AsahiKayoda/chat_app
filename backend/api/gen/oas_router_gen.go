@@ -69,15 +69,38 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				}
 
 				if len(elem) == 0 {
-					// Leaf node.
 					switch r.Method {
+					case "GET":
+						s.handleGetChatRoomsRequest([0]string{}, elemIsEscaped, w, r)
 					case "POST":
 						s.handleChatRoomsPostRequest([0]string{}, elemIsEscaped, w, r)
 					default:
-						s.notAllowed(w, r, "POST")
+						s.notAllowed(w, r, "GET,POST")
 					}
 
 					return
+				}
+				switch elem[0] {
+				case '/': // Prefix: "/groups"
+
+					if l := len("/groups"); len(elem) >= l && elem[0:l] == "/groups" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch r.Method {
+						case "POST":
+							s.handleCreateGroupChatRoomRequest([0]string{}, elemIsEscaped, w, r)
+						default:
+							s.notAllowed(w, r, "POST")
+						}
+
+						return
+					}
+
 				}
 
 			case 'l': // Prefix: "login"
@@ -265,12 +288,19 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 				}
 
 				if len(elem) == 0 {
-					// Leaf node.
 					switch method {
+					case "GET":
+						r.name = GetChatRoomsOperation
+						r.summary = "Get all chat rooms the user belongs to"
+						r.operationID = "GetChatRooms"
+						r.pathPattern = "/chat-rooms"
+						r.args = args
+						r.count = 0
+						return r, true
 					case "POST":
 						r.name = ChatRoomsPostOperation
-						r.summary = "Create or fetch a 1:1 chat room"
-						r.operationID = ""
+						r.summary = "Create or get one-on-one chat room"
+						r.operationID = "ChatRoomsPost"
 						r.pathPattern = "/chat-rooms"
 						r.args = args
 						r.count = 0
@@ -278,6 +308,32 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					default:
 						return
 					}
+				}
+				switch elem[0] {
+				case '/': // Prefix: "/groups"
+
+					if l := len("/groups"); len(elem) >= l && elem[0:l] == "/groups" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch method {
+						case "POST":
+							r.name = CreateGroupChatRoomOperation
+							r.summary = "Create a new group chat room"
+							r.operationID = "CreateGroupChatRoom"
+							r.pathPattern = "/chat-rooms/groups"
+							r.args = args
+							r.count = 0
+							return r, true
+						default:
+							return
+						}
+					}
+
 				}
 
 			case 'l': // Prefix: "login"

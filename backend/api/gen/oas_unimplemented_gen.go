@@ -13,12 +13,30 @@ type UnimplementedHandler struct{}
 
 var _ Handler = UnimplementedHandler{}
 
-// ChatRoomsPost implements POST /chat-rooms operation.
+// ChatRoomsPost implements ChatRoomsPost operation.
 //
-// Create or fetch a 1:1 chat room.
+// Create or get one-on-one chat room.
 //
 // POST /chat-rooms
-func (UnimplementedHandler) ChatRoomsPost(ctx context.Context, req *ChatRoomInput) (r *ChatRoom, _ error) {
+func (UnimplementedHandler) ChatRoomsPost(ctx context.Context, req *ChatRoomInput) (r *ChatRoomsPostOK, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// CreateGroupChatRoom implements CreateGroupChatRoom operation.
+//
+// Create a new group chat room.
+//
+// POST /chat-rooms/groups
+func (UnimplementedHandler) CreateGroupChatRoom(ctx context.Context, req *CreateGroupChatInput) (r *ChatRoom, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// GetChatRooms implements GetChatRooms operation.
+//
+// Get all chat rooms the user belongs to.
+//
+// GET /chat-rooms
+func (UnimplementedHandler) GetChatRooms(ctx context.Context) (r []ChatRoom, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

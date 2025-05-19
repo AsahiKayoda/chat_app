@@ -8,38 +8,49 @@ import (
 
 // Ref: #/components/schemas/ChatRoom
 type ChatRoom struct {
-	ID        int       `json:"id"`
-	IsGroup   bool      `json:"is_group"`
-	CreatedAt time.Time `json:"created_at"`
+	ID        OptNilInt      `json:"id"`
+	RoomName  OptNilString   `json:"room_name"`
+	IsGroup   OptNilBool     `json:"is_group"`
+	CreatedAt OptNilDateTime `json:"created_at"`
 }
 
 // GetID returns the value of ID.
-func (s *ChatRoom) GetID() int {
+func (s *ChatRoom) GetID() OptNilInt {
 	return s.ID
 }
 
+// GetRoomName returns the value of RoomName.
+func (s *ChatRoom) GetRoomName() OptNilString {
+	return s.RoomName
+}
+
 // GetIsGroup returns the value of IsGroup.
-func (s *ChatRoom) GetIsGroup() bool {
+func (s *ChatRoom) GetIsGroup() OptNilBool {
 	return s.IsGroup
 }
 
 // GetCreatedAt returns the value of CreatedAt.
-func (s *ChatRoom) GetCreatedAt() time.Time {
+func (s *ChatRoom) GetCreatedAt() OptNilDateTime {
 	return s.CreatedAt
 }
 
 // SetID sets the value of ID.
-func (s *ChatRoom) SetID(val int) {
+func (s *ChatRoom) SetID(val OptNilInt) {
 	s.ID = val
 }
 
+// SetRoomName sets the value of RoomName.
+func (s *ChatRoom) SetRoomName(val OptNilString) {
+	s.RoomName = val
+}
+
 // SetIsGroup sets the value of IsGroup.
-func (s *ChatRoom) SetIsGroup(val bool) {
+func (s *ChatRoom) SetIsGroup(val OptNilBool) {
 	s.IsGroup = val
 }
 
 // SetCreatedAt sets the value of CreatedAt.
-func (s *ChatRoom) SetCreatedAt(val time.Time) {
+func (s *ChatRoom) SetCreatedAt(val OptNilDateTime) {
 	s.CreatedAt = val
 }
 
@@ -56,6 +67,68 @@ func (s *ChatRoomInput) GetTargetUserID() int {
 // SetTargetUserID sets the value of TargetUserID.
 func (s *ChatRoomInput) SetTargetUserID(val int) {
 	s.TargetUserID = val
+}
+
+type ChatRoomsPostOK struct {
+	ID        int       `json:"id"`
+	IsGroup   bool      `json:"is_group"`
+	CreatedAt time.Time `json:"created_at"`
+}
+
+// GetID returns the value of ID.
+func (s *ChatRoomsPostOK) GetID() int {
+	return s.ID
+}
+
+// GetIsGroup returns the value of IsGroup.
+func (s *ChatRoomsPostOK) GetIsGroup() bool {
+	return s.IsGroup
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *ChatRoomsPostOK) GetCreatedAt() time.Time {
+	return s.CreatedAt
+}
+
+// SetID sets the value of ID.
+func (s *ChatRoomsPostOK) SetID(val int) {
+	s.ID = val
+}
+
+// SetIsGroup sets the value of IsGroup.
+func (s *ChatRoomsPostOK) SetIsGroup(val bool) {
+	s.IsGroup = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *ChatRoomsPostOK) SetCreatedAt(val time.Time) {
+	s.CreatedAt = val
+}
+
+// Ref: #/components/schemas/CreateGroupChatInput
+type CreateGroupChatInput struct {
+	RoomName  string `json:"room_name"`
+	MemberIds []int  `json:"member_ids"`
+}
+
+// GetRoomName returns the value of RoomName.
+func (s *CreateGroupChatInput) GetRoomName() string {
+	return s.RoomName
+}
+
+// GetMemberIds returns the value of MemberIds.
+func (s *CreateGroupChatInput) GetMemberIds() []int {
+	return s.MemberIds
+}
+
+// SetRoomName sets the value of RoomName.
+func (s *CreateGroupChatInput) SetRoomName(val string) {
+	s.RoomName = val
+}
+
+// SetMemberIds sets the value of MemberIds.
+func (s *CreateGroupChatInput) SetMemberIds(val []int) {
+	s.MemberIds = val
 }
 
 // Ref: #/components/schemas/Error
@@ -245,6 +318,258 @@ func (s *MessageInput) SetRoomID(val int) {
 // SetText sets the value of Text.
 func (s *MessageInput) SetText(val string) {
 	s.Text = val
+}
+
+// NewOptNilBool returns new OptNilBool with value set to v.
+func NewOptNilBool(v bool) OptNilBool {
+	return OptNilBool{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilBool is optional nullable bool.
+type OptNilBool struct {
+	Value bool
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilBool was set.
+func (o OptNilBool) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilBool) Reset() {
+	var v bool
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilBool) SetTo(v bool) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilBool) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilBool) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v bool
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilBool) Get() (v bool, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilBool) Or(d bool) bool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilDateTime returns new OptNilDateTime with value set to v.
+func NewOptNilDateTime(v time.Time) OptNilDateTime {
+	return OptNilDateTime{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilDateTime is optional nullable time.Time.
+type OptNilDateTime struct {
+	Value time.Time
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilDateTime was set.
+func (o OptNilDateTime) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilDateTime) Reset() {
+	var v time.Time
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilDateTime) SetTo(v time.Time) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilDateTime) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilDateTime) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v time.Time
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilDateTime) Get() (v time.Time, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilInt returns new OptNilInt with value set to v.
+func NewOptNilInt(v int) OptNilInt {
+	return OptNilInt{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilInt is optional nullable int.
+type OptNilInt struct {
+	Value int
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilInt was set.
+func (o OptNilInt) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilInt) Reset() {
+	var v int
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilInt) SetTo(v int) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilInt) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilInt) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v int
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilInt) Get() (v int, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilInt) Or(d int) int {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilString returns new OptNilString with value set to v.
+func NewOptNilString(v string) OptNilString {
+	return OptNilString{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilString is optional nullable string.
+type OptNilString struct {
+	Value string
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilString was set.
+func (o OptNilString) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilString) Reset() {
+	var v string
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilString) SetTo(v string) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilString) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilString) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v string
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilString) Get() (v string, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
 }
 
 // Ref: #/components/schemas/SignupResponse
