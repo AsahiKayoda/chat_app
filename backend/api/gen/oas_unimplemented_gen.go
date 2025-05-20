@@ -40,6 +40,15 @@ func (UnimplementedHandler) GetChatRooms(ctx context.Context) (r []ChatRoom, _ e
 	return r, ht.ErrNotImplemented
 }
 
+// GetMe implements GetMe operation.
+//
+// 現在ログインしているユーザーを取得.
+//
+// GET /me
+func (UnimplementedHandler) GetMe(ctx context.Context) (r *User, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // LoginPost implements POST /login operation.
 //
 // Login.

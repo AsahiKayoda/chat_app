@@ -9,6 +9,7 @@ const (
 	ChatRoomsPostOperation       OperationName = "ChatRoomsPost"
 	CreateGroupChatRoomOperation OperationName = "CreateGroupChatRoom"
 	GetChatRoomsOperation        OperationName = "GetChatRooms"
+	GetMeOperation               OperationName = "GetMe"
 	LoginPostOperation           OperationName = "LoginPost"
 	MessagesGetOperation         OperationName = "MessagesGet"
 	MessagesPostOperation        OperationName = "MessagesPost"

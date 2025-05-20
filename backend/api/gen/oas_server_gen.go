@@ -26,6 +26,12 @@ type Handler interface {
 	//
 	// GET /chat-rooms
 	GetChatRooms(ctx context.Context) ([]ChatRoom, error)
+	// GetMe implements GetMe operation.
+	//
+	// 現在ログインしているユーザーを取得.
+	//
+	// GET /me
+	GetMe(ctx context.Context) (*User, error)
 	// LoginPost implements POST /login operation.
 	//
 	// Login.

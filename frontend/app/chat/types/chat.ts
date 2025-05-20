@@ -13,3 +13,10 @@ export type Message = {
   room_id: number;
   timestamp: string;
 };
+
+export type ChatRoom = {
+  id: number
+  roomName: string
+  isGroup: boolean
+  createdAt: string
+}

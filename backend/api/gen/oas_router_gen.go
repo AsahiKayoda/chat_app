@@ -123,26 +123,47 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 
-			case 'm': // Prefix: "messages"
+			case 'm': // Prefix: "me"
 
-				if l := len("messages"); len(elem) >= l && elem[0:l] == "messages" {
+				if l := len("me"); len(elem) >= l && elem[0:l] == "me" {
 					elem = elem[l:]
 				} else {
 					break
 				}
 
 				if len(elem) == 0 {
-					// Leaf node.
 					switch r.Method {
 					case "GET":
-						s.handleMessagesGetRequest([0]string{}, elemIsEscaped, w, r)
-					case "POST":
-						s.handleMessagesPostRequest([0]string{}, elemIsEscaped, w, r)
+						s.handleGetMeRequest([0]string{}, elemIsEscaped, w, r)
 					default:
-						s.notAllowed(w, r, "GET,POST")
+						s.notAllowed(w, r, "GET")
 					}
 
 					return
+				}
+				switch elem[0] {
+				case 's': // Prefix: "ssages"
+
+					if l := len("ssages"); len(elem) >= l && elem[0:l] == "ssages" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch r.Method {
+						case "GET":
+							s.handleMessagesGetRequest([0]string{}, elemIsEscaped, w, r)
+						case "POST":
+							s.handleMessagesPostRequest([0]string{}, elemIsEscaped, w, r)
+						default:
+							s.notAllowed(w, r, "GET,POST")
+						}
+
+						return
+					}
+
 				}
 
 			case 's': // Prefix: "signup"
@@ -360,36 +381,61 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					}
 				}
 
-			case 'm': // Prefix: "messages"
+			case 'm': // Prefix: "me"
 
-				if l := len("messages"); len(elem) >= l && elem[0:l] == "messages" {
+				if l := len("me"); len(elem) >= l && elem[0:l] == "me" {
 					elem = elem[l:]
 				} else {
 					break
 				}
 
 				if len(elem) == 0 {
-					// Leaf node.
 					switch method {
 					case "GET":
-						r.name = MessagesGetOperation
-						r.summary = "Get messages with a user"
-						r.operationID = ""
-						r.pathPattern = "/messages"
-						r.args = args
-						r.count = 0
-						return r, true
-					case "POST":
-						r.name = MessagesPostOperation
-						r.summary = "Send a message"
-						r.operationID = ""
-						r.pathPattern = "/messages"
+						r.name = GetMeOperation
+						r.summary = "現在ログインしているユーザーを取得"
+						r.operationID = "GetMe"
+						r.pathPattern = "/me"
 						r.args = args
 						r.count = 0
 						return r, true
 					default:
 						return
 					}
+				}
+				switch elem[0] {
+				case 's': // Prefix: "ssages"
+
+					if l := len("ssages"); len(elem) >= l && elem[0:l] == "ssages" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch method {
+						case "GET":
+							r.name = MessagesGetOperation
+							r.summary = "Get messages with a user"
+							r.operationID = ""
+							r.pathPattern = "/messages"
+							r.args = args
+							r.count = 0
+							return r, true
+						case "POST":
+							r.name = MessagesPostOperation
+							r.summary = "Send a message"
+							r.operationID = ""
+							r.pathPattern = "/messages"
+							r.args = args
+							r.count = 0
+							return r, true
+						default:
+							return
+						}
+					}
+
 				}
 
 			case 's': // Prefix: "signup"

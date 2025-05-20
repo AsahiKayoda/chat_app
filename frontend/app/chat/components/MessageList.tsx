@@ -2,24 +2,25 @@
 'use client'
 
 import styles from '../chat.module.css';
-import { Message, User } from '../types/chat';
+import { Message, User, ChatRoom } from '../types/chat';
 
 // ✅ Props の型定義：親コンポーネントから selectedUser（選択中のユーザー）と messages（メッセージ一覧）を受け取る
 type Props = {
-  selectedUser: User | null; 
+  selectedUser: User | null;
+  selectedGroup: ChatRoom | null; 
   messages: Message[];
+  currentUserId: number;
 };
 // ✅ メッセージ一覧を表示するコンポーネント
-export default function MessageList({ selectedUser, messages }: Props) {
+export default function MessageList({ selectedUser, selectedGroup, messages, currentUserId }: Props) {
 // ✅ ユーザーが選ばれていない場合は何も表示しない（安全対策）
-  if (!selectedUser) return null;
+  if (!selectedUser && !selectedGroup) return null;
 
  return (
     <div className={styles.messages}>
       {/* ✅ メッセージ一覧を1つずつ表示 */}
       {messages.map((msg) => {
-        // ✅ メッセージの sender_id が selectedUser（相手）の ID と異なる場合、自分のメッセージとみなす
-        const isMine = msg.sender_id !== selectedUser.id;
+        const isMine = msg.sender_id === currentUserId;
 
         return (
           <div
