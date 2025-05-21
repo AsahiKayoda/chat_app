@@ -176,9 +176,32 @@
   margin-top: 1rem;
 }
 
-.userList {
-  margin-top: 1rem;
+
+/* ✅ ユーザーリストのラベルを見やすく整える */
+.userList label {
+  color: #007bff;
   display: flex;
-  flex-direction: column;
-  gap: 4px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  font-size: 15px;
+}
+
+/* ✅ 自分のユーザー名表示を強調 */
+.currentUser {
+  font-weight: bold;
+  color: #0070f3;
+  margin-left: 4px;
+}
+
+/* ✅ チェックボックスが disabled のときのスタイル */
+.disabled {
+  background-color: #fff;
+  border: 1px solid #0070f3;
+  accent-color: #0070f3;
+  cursor: not-allowed;
+  width: 16px;
+  height: 16px;
 }

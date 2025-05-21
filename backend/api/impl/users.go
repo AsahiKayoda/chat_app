@@ -13,14 +13,14 @@ import (
 // GET /users のエンドポイントに対応
 func (h *HandlerImpl) UsersGet(ctx context.Context) (gen.UsersGetRes, error) {
 	// 🔑 JWTミドルウェアで埋め込んだ userID を context から取り出す
-	userID, ok := middleware.GetUserIDFromContext(ctx)
+	_, ok := middleware.GetUserIDFromContext(ctx)
 	if !ok {
 		return nil, errors.New("unauthorized (no user ID in context)")
 	}
 
 	// DBから全ユーザーを取得
 	var users []db.UserModel
-	if result := db.DB.Where("id != ?", userID).Find(&users); result.Error != nil {
+	if result := db.DB.Find(&users); result.Error != nil {
 		return nil, result.Error
 	}
 

@@ -48,6 +48,7 @@ export default function ChatLayout() {
           users={users}
           selectedUser={selectedUser}
           onSelectUser={handleSelectUser}
+          currentUserId={currentUserId}
         />
         <GroupList
           groups={groups}

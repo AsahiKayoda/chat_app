@@ -25,6 +25,8 @@ services:
       - "3000:3000"
     volumes:
       - ./frontend:/app
+      - /app/node_modules  # ← コンテナ側の node_modules を上書きしない
+      - /app/.next         # ← キャッシュを隔離することでリセット可能に
     working_dir: /app
     command: npm run dev
 

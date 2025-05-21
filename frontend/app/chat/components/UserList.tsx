@@ -9,15 +9,18 @@ type Props = {
   users: User[];
   selectedUser: User | null; // 現在選択されているユーザー（null の場合は未選択）
   onSelectUser: (user: User) => void; // ユーザーを選択したときに呼び出される関数
+  currentUserId: number; // 👈 追加
 };
 
 // ✅ ユーザー一覧を表示する UI コンポーネント
-export default function UserList({ users, selectedUser, onSelectUser }: Props) {
+export default function UserList({ users, selectedUser, onSelectUser, currentUserId, }: Props) {
 
   return (
     <div className={styles.sidebar}>
       <h3>ユーザー一覧</h3>
-      {users.map((user) => (
+      {users
+      .filter((user) => user.id !== currentUserId)
+      .map((user) => (
         <div
           key={user.id} // ✅ React の仮想DOMで効率的に再描画するために必要
           className={styles.user}
