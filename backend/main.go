@@ -9,6 +9,7 @@ import (
 	"backend/api/impl"
 	"backend/db"
 	"backend/middleware" //JWTミドルウェア
+	"backend/websocket"//
 )
 
 // ✅ 開発用CORSミドルウェア
@@ -63,9 +64,22 @@ func main() {
 	// ✅ CORSミドルウェアでさらにラップ（CORS → JWT → ogen）
 	finalHandler := withCORS(jwtWrapped)
 
-	// ✅ 最終ハンドラーでサーバー起動
+	// ✅ WebSocketハブの初期化
+	websocket.InitWebSocketHub()
+
+	// ✅ ServeMux にルート登録
+	mux := http.NewServeMux()
+
+	// /ws は WebSocket 専用
+	mux.HandleFunc("/ws", websocket.WebSocketHandler)
+
+	// /（それ以外）は ogen + JWT + CORS などを通したAPI
+	mux.Handle("/", finalHandler)
+
+	// ✅ 最終起動
 	log.Println("🚀 サーバー起動: http://localhost:8080")
-	if err := http.ListenAndServe(":8080", finalHandler); err != nil {
+	if err := http.ListenAndServe(":8080", mux); err != nil {
 		log.Fatalf("❌ サーバー起動エラー: %v", err)
 	}
+
 }

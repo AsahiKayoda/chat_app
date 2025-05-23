@@ -2,6 +2,8 @@
 
 import { useChatRoom } from '../hooks/useChatRoom';
 import { useCurrentUser } from '../hooks/useCurrentUser';
+import { useChatSocket } from '../hooks/useChatSocket';
+
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { removeToken } from '@/lib/auth';
@@ -20,16 +22,13 @@ export default function ChatLayout() {
     selectedUser,
     selectedGroup,
     roomId,
-    messages,
     error,
     handleSelectUser,
     handleSelectGroup,
-    handleSendMessage,
     createGroup
   } = useChatRoom();
 
   const { currentUserId, loading: userLoading, error: userError } = useCurrentUser();
-
   const [showCreateModal, setShowCreateModal] = useState(false);
   const router = useRouter();
 
@@ -37,6 +36,12 @@ export default function ChatLayout() {
     removeToken();
     router.push('/login');
   };
+
+  const shouldConnectSocket = roomId !== null && currentUserId !== null;
+  const { messages, sendMessage } = useChatSocket(
+    shouldConnectSocket ? roomId : -1,
+    shouldConnectSocket ? currentUserId : -1
+  );
 
   if (userLoading) return <div>ユーザー情報を読み込み中...</div>;
   if (userError || !currentUserId) return <div>ユーザー情報の取得に失敗しました</div>;
@@ -48,7 +53,7 @@ export default function ChatLayout() {
           users={users}
           selectedUser={selectedUser}
           onSelectUser={handleSelectUser}
-          currentUserId={currentUserId}
+          currentUserId={currentUserId ?? -1}
         />
         <GroupList
           groups={groups}
@@ -59,29 +64,36 @@ export default function ChatLayout() {
       </div>
 
       <div className={styles.chatArea}>
-        <div className={styles.chatHeader}>
-          <h3>{selectedUser?.name || selectedGroup?.roomName || ''}</h3>
-          <button onClick={handleLogout} className={styles.logoutButton}>
-            ログアウト
-          </button>
-        </div>
+        {roomId === null ? (
+          <div>ルームまたはユーザーが未選択です</div>
+        ) : (
+          <>
+            <div className={styles.chatHeader}>
+              <h3>{selectedUser?.name || selectedGroup?.roomName || ''}</h3>
+              <button onClick={handleLogout} className={styles.logoutButton}>
+                ログアウト
+              </button>
+            </div>
 
-        {error && <p style={{ color: 'red' }}>{error}</p>}
+            {error && <p style={{ color: 'red' }}>{error}</p>}
 
-        <MessageList
-          messages={messages}
-          selectedUser={selectedUser}
-          selectedGroup={selectedGroup}
-          currentUserId={currentUserId}
-        />
+            <MessageList
+              messages={messages}
+              selectedUser={selectedUser}
+              selectedGroup={selectedGroup}
+              currentUserId={currentUserId ?? -1}
+              users={users}
+            />
 
-        {roomId && <MessageForm onSubmit={handleSendMessage} />}
+            <MessageForm onSubmit={sendMessage} />
+          </>
+        )}
       </div>
 
       {showCreateModal && (
         <CreateGroupModal
           users={users}
-          currentUserId={currentUserId}
+          currentUserId={currentUserId ?? -1}
           onCreate={(name, members) => {
             createGroup(name, members);
             setShowCreateModal(false);

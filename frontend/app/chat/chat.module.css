@@ -100,6 +100,13 @@
   line-height: 1.4;         /* ✅ 行間も読みやすく */
 }
 
+.senderName {
+  font-size: 0.75rem;
+  color: #666;
+  margin-bottom: 4px;
+  padding-left: 2px;
+}
+
 .sent {
   background-color: #e4f1ff;
   align-self: flex-end;

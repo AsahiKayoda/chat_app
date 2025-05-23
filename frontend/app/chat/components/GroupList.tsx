@@ -11,7 +11,7 @@ type Props = {
 }
 
 export default function GroupList({ groups, selectedGroup, onSelectGroup, onCreateGroup }: Props) {
-  console.log('📦 GroupList: groups:', groups);  
+  //console.log('📦 GroupList: groups:', groups);  
   return (
     <div className={styles.sidebar}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

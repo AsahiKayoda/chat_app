@@ -13,11 +13,14 @@ export function useChatRoom() {
 
   // ユーザー一覧取得
   useEffect(() => {
+    //console.log("👀 useEffect for fetchUsers called"); // ← これを追加
     const fetchUsers = async () => {
       try {
         const data = await chatService.fetchUsers();
+        //console.log("✅ fetchUsers:", data);
         setUsers(data);
-      } catch {
+      } catch(err: any) {
+        //console.error("🚨 fetchUsers error:", err);
         setError('ユーザー一覧の取得に失敗しました');
       }
     };
