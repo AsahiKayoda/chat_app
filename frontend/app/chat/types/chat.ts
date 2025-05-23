@@ -12,6 +12,7 @@ export type Message = {
   sender_id: number;
   room_id: number;
   timestamp: string;
+  is_read?: boolean
 };
 
 export type ChatRoom = {

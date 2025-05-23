@@ -30,6 +30,7 @@ export default function ChatLayout() {
 
   const { currentUserId, loading: userLoading, error: userError } = useCurrentUser();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [unreadRoomIds, setUnreadRoomIds] = useState<Set<number>>(new Set());
   const router = useRouter();
 
   const handleLogout = () => {
@@ -40,8 +41,23 @@ export default function ChatLayout() {
   const shouldConnectSocket = roomId !== null && currentUserId !== null;
   const { messages, sendMessage } = useChatSocket(
     shouldConnectSocket ? roomId : -1,
-    shouldConnectSocket ? currentUserId : -1
+    shouldConnectSocket ? currentUserId : -1,
+    setUnreadRoomIds
   );
+
+ /* // ✅ デバッグログ追加
+  console.log("✅ ChatLayout state:");
+  console.log("  userLoading:", userLoading);
+  console.log("  userError:", userError);
+  console.log("  currentUserId:", currentUserId);
+  console.log("  selectedUser:", selectedUser);
+  console.log("  selectedGroup:", selectedGroup);
+  console.log("  roomId:", roomId);
+  console.log("  users:", users);
+  console.log("  groups:", groups);
+  console.log("  messages:", messages);  
+*/
+  console.log("✅ unreadRoomIds:", Array.from(unreadRoomIds));
 
   if (userLoading) return <div>ユーザー情報を読み込み中...</div>;
   if (userError || !currentUserId) return <div>ユーザー情報の取得に失敗しました</div>;
@@ -54,12 +70,14 @@ export default function ChatLayout() {
           selectedUser={selectedUser}
           onSelectUser={handleSelectUser}
           currentUserId={currentUserId ?? -1}
+          unreadRoomIds={unreadRoomIds}
         />
         <GroupList
           groups={groups}
           selectedGroup={selectedGroup}
           onSelectGroup={handleSelectGroup}
           onCreateGroup={() => setShowCreateModal(true)}
+          unreadRoomIds={unreadRoomIds}
         />
       </div>
 

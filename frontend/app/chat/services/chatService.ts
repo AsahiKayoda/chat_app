@@ -51,3 +51,11 @@ export async function fetchCurrentUser(): Promise<{ id: number; name: string }> 
   const res = await api.get('/me');
   return res.data;
 }
+
+export async function markMessageAsRead(messageId: number): Promise<void> {
+  try {
+    await api.post(`/messages/${messageId}/read`);
+  } catch (err) {
+    console.error('📛 markMessageAsRead failed:', err);
+  }
+}

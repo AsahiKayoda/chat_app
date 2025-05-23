@@ -69,3 +69,13 @@ type RoomMemberModel struct {
 func (RoomMemberModel) TableName() string {
 	return "room_members"
 }
+
+type MessageReadModel struct {
+	MessageID uint      `gorm:"primaryKey"`
+	UserID    uint      `gorm:"primaryKey"`
+	ReadAt    time.Time `gorm:"autoCreateTime"`
+}
+
+func (MessageReadModel) TableName() string {
+	return "message_reads"
+}

@@ -5,7 +5,7 @@ import { Message } from '../types/chat';
 import { fetchMessages } from '../services/chatService';
 import { getToken } from '@/lib/auth';
 
-export function useChatSocket(roomId: number, userId: number) {
+export function useChatSocket(roomId: number, userId: number ,setUnreadRoomIds?: React.Dispatch<React.SetStateAction<Set<number>>>) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [socket, setSocket] = useState<WebSocket | null>(null);
 
@@ -28,6 +28,7 @@ export function useChatSocket(roomId: number, userId: number) {
     };
 
     ws.onmessage = (event) => {
+      console.log("📩 Raw WebSocket message:", event.data); // ✅ このログが絶対出るべき！
     try {
       console.log("📩 Raw WebSocket message:", event.data);
 
@@ -39,6 +40,7 @@ export function useChatSocket(roomId: number, userId: number) {
       }
 
       const payload = JSON.parse(raw);
+      console.log("📦 payload:", payload); // ← payloadの中身を出力する
 
       if (payload.type === "message") {
         const msg: Message = {
@@ -50,6 +52,21 @@ export function useChatSocket(roomId: number, userId: number) {
         };
         setMessages((prev) => [...prev, msg]);
       }
+      if (payload.type === "read") {
+        console.log("📨 read event received:", payload.room_id);
+
+        if (typeof setUnreadRoomIds === "function") {
+          setUnreadRoomIds((prev) => {
+            const updated = new Set(prev);
+            updated.delete(Number(payload.room_id));
+            return updated;
+          });
+        } else {
+          console.warn("⚠️ setUnreadRoomIds not defined");
+        }
+      }
+
+
     } catch (err) {
       console.error("📛 JSON parse error:", err);
       console.warn("⚠️ 受信したデータ:", event.data);

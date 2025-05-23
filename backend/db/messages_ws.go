@@ -2,6 +2,7 @@ package db
 
 import (
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	"log"
 	"time"
 )
@@ -22,4 +23,14 @@ func SaveMessage(db *gorm.DB, roomID int, senderID int, content string) (*Messag
 	}
 	log.Printf("✅ メッセージ保存成功 → ID: %d", msg.ID)
 	return msg, nil
+}
+
+func MarkMessageAsRead(db *gorm.DB, messageID, userID uint) error {
+	read := &MessageReadModel{
+		MessageID: messageID,
+		UserID:    userID,
+		ReadAt:    time.Now(),
+	}
+	// INSERT ON CONFLICT DO NOTHING
+	return db.Clauses(clause.OnConflict{DoNothing: true}).Create(read).Error
 }

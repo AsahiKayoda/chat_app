@@ -1,16 +1,15 @@
-//全ての接続中ユーザー（Client）を管理する
 package websocket
 
 import (
 	"log"
 	"encoding/json"
 )
-// Hub manages all active clients and broadcasts messages.
+
 type Hub struct {
-	Clients    map[*Client]bool        // 現在接続中のクライアント
-	Register   chan *Client            // 新しい接続要求
-	Unregister chan *Client            // 切断要求
-	Broadcast  chan []byte             // ブロードキャスト対象のメッセージ
+	Clients    map[*Client]bool
+	Register   chan *Client
+	Unregister chan *Client
+	Broadcast  chan []byte
 }
 
 func (h *Hub) Run() {
@@ -27,22 +26,21 @@ func (h *Hub) Run() {
 			}
 
 		case message := <-h.Broadcast:
-			// ✅ message は []byte（JSON）なのでそのまま送信すればOK
+			// Broadcast で受け取った []byte を JSON にパース
+			var msgMap map[string]interface{}
+			if err := json.Unmarshal(message, &msgMap); err != nil {
+				log.Println("unmarshal error in hub:", err)
+				continue
+			}
 
+			roomID, ok := msgMap["room_id"].(string)
+			if !ok {
+				log.Println("invalid room_id in broadcast message")
+				continue
+			}
+
+			// 同じルームのクライアントにのみ送信
 			for client := range h.Clients {
-				// ✅ 特定のルームに送信する場合は、JSONから一時的にパースする必要がある
-				var msgMap map[string]interface{}
-				if err := json.Unmarshal(message, &msgMap); err != nil {
-					log.Println("unmarshal error in hub:", err)
-					continue
-				}
-
-				roomID, ok := msgMap["room_id"].(string)
-				if !ok {
-					log.Println("invalid room_id in broadcast message")
-					continue
-				}
-
 				if client.RoomID == roomID {
 					select {
 					case client.Send <- message:

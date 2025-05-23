@@ -58,6 +58,15 @@ func (UnimplementedHandler) LoginPost(ctx context.Context, req *LoginRequest) (r
 	return r, ht.ErrNotImplemented
 }
 
+// MarkMessageAsRead implements markMessageAsRead operation.
+//
+// メッセージを既読として登録.
+//
+// POST /messages/{message_id}/read
+func (UnimplementedHandler) MarkMessageAsRead(ctx context.Context, params MarkMessageAsReadParams) (r MarkMessageAsReadRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // MessagesGet implements GET /messages operation.
 //
 // Get messages with a user.

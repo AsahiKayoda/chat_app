@@ -38,6 +38,12 @@ type Handler interface {
 	//
 	// POST /login
 	LoginPost(ctx context.Context, req *LoginRequest) (LoginPostRes, error)
+	// MarkMessageAsRead implements markMessageAsRead operation.
+	//
+	// メッセージを既読として登録.
+	//
+	// POST /messages/{message_id}/read
+	MarkMessageAsRead(ctx context.Context, params MarkMessageAsReadParams) (MarkMessageAsReadRes, error)
 	// MessagesGet implements GET /messages operation.
 	//
 	// Get messages with a user.

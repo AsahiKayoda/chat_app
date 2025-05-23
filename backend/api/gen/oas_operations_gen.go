@@ -11,6 +11,7 @@ const (
 	GetChatRoomsOperation        OperationName = "GetChatRooms"
 	GetMeOperation               OperationName = "GetMe"
 	LoginPostOperation           OperationName = "LoginPost"
+	MarkMessageAsReadOperation   OperationName = "MarkMessageAsRead"
 	MessagesGetOperation         OperationName = "MessagesGet"
 	MessagesPostOperation        OperationName = "MessagesPost"
 	SignupPostOperation          OperationName = "SignupPost"

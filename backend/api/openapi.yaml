@@ -118,6 +118,33 @@ paths:
                 items:
                   $ref: '#/components/schemas/Message'
 
+  /messages/{message_id}/read:
+    post:
+      summary: メッセージを既読として登録
+      operationId: markMessageAsRead
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '204':
+          description: 登録成功
+        '401':
+          description: 認証エラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: サーバーエラー
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+
   /chat-rooms:
     post:
       summary: Create or get one-on-one chat room
@@ -298,6 +325,16 @@ components:
         timestamp:
           type: string
           format: date-time
+        is_read:             
+          type: boolean          
+
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+      required:
+        - message
 
     ChatRoomInput:
       type: object
