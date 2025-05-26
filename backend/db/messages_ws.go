@@ -50,3 +50,19 @@ func IsUserInRoom(userID int, roomID int) bool {
 	return count > 0
 }
 
+func GetUnreadMessages(db *gorm.DB, userID uint) ([]*MessageModel, error) {
+	var messages []*MessageModel
+
+	err := db.
+		Raw(`
+			SELECT * FROM messages m
+			WHERE m.id NOT IN (
+				SELECT message_id FROM message_reads WHERE user_id = ?
+			)
+			AND m.sender_id != ?
+			ORDER BY m.created_at ASC
+		`, userID, userID).
+		Scan(&messages).Error
+
+	return messages, err
+}

@@ -59,3 +59,11 @@ export async function markMessageAsRead(messageId: number): Promise<void> {
     console.error('📛 markMessageAsRead failed:', err);
   }
 }
+
+// ✅ 未読メッセージを取得する新API
+export async function fetchUnreadMessages(): Promise<Message[]> {
+  const res = await api.get('/messages/unread');
+  return res.data;
+} 
+
+

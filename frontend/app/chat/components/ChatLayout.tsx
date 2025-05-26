@@ -1,13 +1,14 @@
-// ✅ ChatLayout.tsx（安全でシンプルに戻したバージョン、Hookの順守）
+// ✅ ChatLayout.tsx（fetchMessages を移し、useChatSocket はリアルタイム専用に）
 'use client';
 
 import { useChatRoom } from '../hooks/useChatRoom';
 import { useCurrentUser } from '../hooks/useCurrentUser';
 import { useChatSocket } from '../hooks/useChatSocket';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { removeToken } from '@/lib/auth';
+import { fetchMessages, fetchUnreadMessages } from '../services/chatService';
 
 import UserList from './UserList';
 import GroupList from './GroupList';
@@ -15,6 +16,7 @@ import MessageList from './MessageList';
 import MessageForm from './MessageForm';
 import CreateGroupModal from './CreateGroupModal';
 import styles from '../chat.module.css';
+import { Message } from '../types/chat';
 
 export default function ChatLayout() {
   const {
@@ -32,6 +34,7 @@ export default function ChatLayout() {
   const { currentUserId, loading: userLoading, error: userError } = useCurrentUser();
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [unreadRoomIds, setUnreadRoomIds] = useState<Set<number>>(new Set());
+  const [messages, setMessages] = useState<Message[]>([]);
   const router = useRouter();
 
   const handleLogout = () => {
@@ -39,15 +42,40 @@ export default function ChatLayout() {
     router.push('/login');
   };
 
-  // ✅ 無条件に useChatSocket を呼び、内部でガードする
+  // ✅ ログイン後、一度だけ未読情報取得
+  useEffect(() => {
+    if (!currentUserId) return;
+    fetchUnreadMessages()
+      .then((msgs) => {
+        const roomIds = new Set(msgs.map((m) => m.room_id));
+        setUnreadRoomIds(roomIds);
+      })
+      .catch((err) => console.error('未読取得失敗:', err));
+  }, [currentUserId]);
+
+  // ✅ ルーム切替時にメッセージ取得
+  useEffect(() => {
+    if (roomId === null || currentUserId === null) return;
+
+    fetchMessages(roomId)
+      .then((initialMessages) => {
+        setMessages((prev) => {
+          const others = prev.filter((msg) => msg.room_id !== roomId);
+          return [...others, ...initialMessages];
+        });
+      })
+      .catch((err) => console.error("❌ メッセージ取得失敗:", err));
+  }, [roomId, currentUserId]);
+
+  // ✅ WebSocket接続はリアルタイム専用に限定（setMessages を渡す）
   const {
-    messages,
     sendMessage,
     sendReadNotification
   } = useChatSocket(
     currentUserId ?? -1,
     setUnreadRoomIds,
-    roomId ?? -1
+    roomId ?? -1,
+    setMessages
   );
 
   if (userLoading) return <div>ユーザー情報を読み込み中...</div>;

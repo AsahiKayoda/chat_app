@@ -172,6 +172,32 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							break
 						}
 
+						if len(elem) == 0 {
+							break
+						}
+						switch elem[0] {
+						case 'u': // Prefix: "unread"
+							origElem := elem
+							if l := len("unread"); len(elem) >= l && elem[0:l] == "unread" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch r.Method {
+								case "GET":
+									s.handleGetUnreadMessagesRequest([0]string{}, elemIsEscaped, w, r)
+								default:
+									s.notAllowed(w, r, "GET")
+								}
+
+								return
+							}
+
+							elem = origElem
+						}
 						// Param: "message_id"
 						// Match until "/"
 						idx := strings.IndexByte(elem, '/')
@@ -490,6 +516,36 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							break
 						}
 
+						if len(elem) == 0 {
+							break
+						}
+						switch elem[0] {
+						case 'u': // Prefix: "unread"
+							origElem := elem
+							if l := len("unread"); len(elem) >= l && elem[0:l] == "unread" {
+								elem = elem[l:]
+							} else {
+								break
+							}
+
+							if len(elem) == 0 {
+								// Leaf node.
+								switch method {
+								case "GET":
+									r.name = GetUnreadMessagesOperation
+									r.summary = "Get unread messages for current user"
+									r.operationID = "GetUnreadMessages"
+									r.pathPattern = "/messages/unread"
+									r.args = args
+									r.count = 0
+									return r, true
+								default:
+									return
+								}
+							}
+
+							elem = origElem
+						}
 						// Param: "message_id"
 						// Match until "/"
 						idx := strings.IndexByte(elem, '/')

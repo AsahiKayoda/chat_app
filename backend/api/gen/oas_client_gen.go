@@ -52,6 +52,12 @@ type Invoker interface {
 	//
 	// GET /me
 	GetMe(ctx context.Context) (*User, error)
+	// GetUnreadMessages invokes GetUnreadMessages operation.
+	//
+	// Get unread messages for current user.
+	//
+	// GET /messages/unread
+	GetUnreadMessages(ctx context.Context) ([]Message, error)
 	// LoginPost invokes POST /login operation.
 	//
 	// Login.
@@ -420,6 +426,78 @@ func (c *Client) sendGetMe(ctx context.Context) (res *User, err error) {
 
 	stage = "DecodeResponse"
 	result, err := decodeGetMeResponse(resp)
+	if err != nil {
+		return res, errors.Wrap(err, "decode response")
+	}
+
+	return result, nil
+}
+
+// GetUnreadMessages invokes GetUnreadMessages operation.
+//
+// Get unread messages for current user.
+//
+// GET /messages/unread
+func (c *Client) GetUnreadMessages(ctx context.Context) ([]Message, error) {
+	res, err := c.sendGetUnreadMessages(ctx)
+	return res, err
+}
+
+func (c *Client) sendGetUnreadMessages(ctx context.Context) (res []Message, err error) {
+	otelAttrs := []attribute.KeyValue{
+		otelogen.OperationID("GetUnreadMessages"),
+		semconv.HTTPRequestMethodKey.String("GET"),
+		semconv.HTTPRouteKey.String("/messages/unread"),
+	}
+
+	// Run stopwatch.
+	startTime := time.Now()
+	defer func() {
+		// Use floating point division here for higher precision (instead of Millisecond method).
+		elapsedDuration := time.Since(startTime)
+		c.duration.Record(ctx, float64(elapsedDuration)/float64(time.Millisecond), metric.WithAttributes(otelAttrs...))
+	}()
+
+	// Increment request counter.
+	c.requests.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+
+	// Start a span for this request.
+	ctx, span := c.cfg.Tracer.Start(ctx, GetUnreadMessagesOperation,
+		trace.WithAttributes(otelAttrs...),
+		clientSpanKind,
+	)
+	// Track stage for error reporting.
+	var stage string
+	defer func() {
+		if err != nil {
+			span.RecordError(err)
+			span.SetStatus(codes.Error, stage)
+			c.errors.Add(ctx, 1, metric.WithAttributes(otelAttrs...))
+		}
+		span.End()
+	}()
+
+	stage = "BuildURL"
+	u := uri.Clone(c.requestURL(ctx))
+	var pathParts [1]string
+	pathParts[0] = "/messages/unread"
+	uri.AddPathParts(u, pathParts[:]...)
+
+	stage = "EncodeRequest"
+	r, err := ht.NewRequest(ctx, "GET", u)
+	if err != nil {
+		return res, errors.Wrap(err, "create request")
+	}
+
+	stage = "SendRequest"
+	resp, err := c.cfg.Client.Do(r)
+	if err != nil {
+		return res, errors.Wrap(err, "do request")
+	}
+	defer resp.Body.Close()
+
+	stage = "DecodeResponse"
+	result, err := decodeGetUnreadMessagesResponse(resp)
 	if err != nil {
 		return res, errors.Wrap(err, "decode response")
 	}

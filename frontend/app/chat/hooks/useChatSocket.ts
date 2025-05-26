@@ -1,33 +1,18 @@
-// ✅ グローバルWebSocket接続に最適化した useChatSocket.ts
+// ✅ useChatSocket.ts（最小限の変更で setMessages を外から受け取って使用）
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Message } from '../types/chat';
 import { getToken } from '@/lib/auth';
-import { fetchMessages } from '../services/chatService';
 
 export function useChatSocket(
   userId: number,
   setUnreadRoomIds: React.Dispatch<React.SetStateAction<Set<number>>>,
-  currentRoomId: number | null
+  currentRoomId: number,
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>> // ✅ 追加
 ) {
-  const [messages, setMessages] = useState<Message[]>([]);
   const socketRef = useRef<WebSocket | null>(null);
 
-  // ✅ ルーム切替時にメッセージをRESTで取得（WebSocketとは独立）
-  useEffect(() => {
-    if (currentRoomId === null || userId === -1) return;
-
-    fetchMessages(currentRoomId)
-      .then((initialMessages) => {
-        setMessages((prev) => {
-          const others = prev.filter((msg) => msg.room_id !== currentRoomId);
-          return [...others, ...initialMessages];
-        });
-      });
-  }, [currentRoomId, userId]);
-
-  // ✅ WebSocket接続は userId のみ依存（1回だけ接続）
   useEffect(() => {
     const token = getToken();
     if (!token || userId === -1) {
@@ -50,7 +35,7 @@ export function useChatSocket(
           const parsedRoomId = Number(parsed.room_id);
 
           const newMessage: Message = {
-            id: parsed.id , // 仮ID fallback
+            id: parsed.id ?? Date.now(),
             text: parsed.text,
             sender_id: parsed.user_id,
             room_id: parsedRoomId,
@@ -122,7 +107,6 @@ export function useChatSocket(
   };
 
   return {
-    messages,
     sendMessage,
     sendReadNotification,
   };
