@@ -162,6 +162,21 @@ func (s *Error) SetMessage(val string) {
 func (*Error) loginPostRes()  {}
 func (*Error) signupPostRes() {}
 
+// Ref: #/components/schemas/ErrorResponse
+type ErrorResponse struct {
+	Message string `json:"message"`
+}
+
+// GetMessage returns the value of Message.
+func (s *ErrorResponse) GetMessage() string {
+	return s.Message
+}
+
+// SetMessage sets the value of Message.
+func (s *ErrorResponse) SetMessage(val string) {
+	s.Message = val
+}
+
 // ErrorStatusCode wraps Error with StatusCode.
 type ErrorStatusCode struct {
 	StatusCode int
@@ -235,6 +250,19 @@ func (s *LoginResponse) SetToken(val string) {
 
 func (*LoginResponse) loginPostRes() {}
 
+type MarkMessageAsReadInternalServerError ErrorResponse
+
+func (*MarkMessageAsReadInternalServerError) markMessageAsReadRes() {}
+
+// MarkMessageAsReadNoContent is response for MarkMessageAsRead operation.
+type MarkMessageAsReadNoContent struct{}
+
+func (*MarkMessageAsReadNoContent) markMessageAsReadRes() {}
+
+type MarkMessageAsReadUnauthorized ErrorResponse
+
+func (*MarkMessageAsReadUnauthorized) markMessageAsReadRes() {}
+
 // Ref: #/components/schemas/Message
 type Message struct {
 	ID        int       `json:"id"`
@@ -242,6 +270,7 @@ type Message struct {
 	RoomID    int       `json:"room_id"`
 	Text      string    `json:"text"`
 	Timestamp time.Time `json:"timestamp"`
+	IsRead    OptBool   `json:"is_read"`
 }
 
 // GetID returns the value of ID.
@@ -269,6 +298,11 @@ func (s *Message) GetTimestamp() time.Time {
 	return s.Timestamp
 }
 
+// GetIsRead returns the value of IsRead.
+func (s *Message) GetIsRead() OptBool {
+	return s.IsRead
+}
+
 // SetID sets the value of ID.
 func (s *Message) SetID(val int) {
 	s.ID = val
@@ -292,6 +326,11 @@ func (s *Message) SetText(val string) {
 // SetTimestamp sets the value of Timestamp.
 func (s *Message) SetTimestamp(val time.Time) {
 	s.Timestamp = val
+}
+
+// SetIsRead sets the value of IsRead.
+func (s *Message) SetIsRead(val OptBool) {
+	s.IsRead = val
 }
 
 // Ref: #/components/schemas/MessageInput
@@ -318,6 +357,52 @@ func (s *MessageInput) SetRoomID(val int) {
 // SetText sets the value of Text.
 func (s *MessageInput) SetText(val string) {
 	s.Text = val
+}
+
+// NewOptBool returns new OptBool with value set to v.
+func NewOptBool(v bool) OptBool {
+	return OptBool{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptBool is optional bool.
+type OptBool struct {
+	Value bool
+	Set   bool
+}
+
+// IsSet returns true if OptBool was set.
+func (o OptBool) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptBool) Reset() {
+	var v bool
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptBool) SetTo(v bool) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptBool) Get() (v bool, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptBool) Or(d bool) bool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
 }
 
 // NewOptNilBool returns new OptNilBool with value set to v.

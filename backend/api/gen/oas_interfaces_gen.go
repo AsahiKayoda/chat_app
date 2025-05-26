@@ -5,6 +5,10 @@ type LoginPostRes interface {
 	loginPostRes()
 }
 
+type MarkMessageAsReadRes interface {
+	markMessageAsReadRes()
+}
+
 type SignupPostRes interface {
 	signupPostRes()
 }

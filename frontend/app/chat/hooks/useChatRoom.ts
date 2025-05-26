@@ -1,103 +1,86 @@
-import { useEffect, useState } from 'react';
-import { User, Message, ChatRoom } from '../types/chat';
-import * as chatService from '../services/chatService';
+// ✅ useChatRoom.ts（roomId取得にconsole.log追加）
+import { useState, useEffect } from 'react';
+import { ChatRoom, User } from '../types/chat';
+import {
+  fetchChatRooms,
+  fetchUsers,
+  createGroup,
+  createOrGetRoom,
+} from '../services/chatService';
+import { fetchCurrentUser } from '../services/chatService';
 
 export function useChatRoom() {
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<(User & { roomId?: number })[]>([]);
   const [groups, setGroups] = useState<ChatRoom[]>([]);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [selectedGroup, setSelectedGroup] = useState<ChatRoom | null>(null);
   const [roomId, setRoomId] = useState<number | null>(null);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [error, setError] = useState('');
+  const [error, setError] = useState<string | null>(null);
 
-  // ユーザー一覧取得
+  // ✅ 初期データ読み込み
   useEffect(() => {
-    //console.log("👀 useEffect for fetchUsers called"); // ← これを追加
-    const fetchUsers = async () => {
+    const initialize = async () => {
       try {
-        const data = await chatService.fetchUsers();
-        //console.log("✅ fetchUsers:", data);
-        setUsers(data);
-      } catch(err: any) {
-        //console.error("🚨 fetchUsers error:", err);
-        setError('ユーザー一覧の取得に失敗しました');
-      }
-    };
-    fetchUsers();
-  }, []);
+        const [userList, roomList, currentUser] = await Promise.all([
+          fetchUsers(),
+          fetchChatRooms(),
+          fetchCurrentUser(),
+        ]);
 
-  // グループ一覧取得
-  useEffect(() => {
-    const fetchGroups = async () => {
-      try {
-        const data = await chatService.fetchChatRooms();
-        console.log('📦 ALL ROOMS:', data);
-        const groupRooms = data.filter((r: ChatRoom) => r.isGroup === true);
-        console.log('👥 GROUP ROOMS:', groupRooms);
-        setGroups(groupRooms);
+        // 他ユーザーに対して roomId を取得
+        const extendedUsers = await Promise.all(
+          userList.map(async (user) => {
+            if (user.id === currentUser.id) return user;
+            try {
+              const id = await createOrGetRoom(user.id);
+              //console.log(`✅ roomId取得 user=${user.name} id=${id}`);
+              return { ...user, roomId: id };
+            } catch (err) {
+              //console.warn(`❌ roomId取得失敗 user_id=${user.id}`, err);
+              return user;
+            }
+          })
+        );
+
+        setUsers(extendedUsers);
+        setGroups(roomList);
       } catch (err) {
-        console.error('🚨 fetchChatRooms error', err);
-        setError('グループ一覧の取得に失敗しました');
+        console.error('❌ 初期データ取得失敗:', err);
+        setError('初期データの取得に失敗しました');
       }
     };
-    fetchGroups();
+
+    initialize();
   }, []);
-
-  // メッセージ一覧取得（ルームID変更時）
-  useEffect(() => {
-    if (roomId) {
-      fetchMessages(roomId);
-    }
-  }, [roomId]);
-
-  const fetchMessages = async (roomId: number) => {
-    try {
-      const data = await chatService.fetchMessages(roomId);
-      setMessages(data);
-    } catch {
-      setError('メッセージの取得に失敗しました');
-    }
-  };
 
   const handleSelectUser = async (user: User) => {
-    setSelectedUser(user);
-    setSelectedGroup(null);
-    setMessages([]);
-
     try {
-      const id = await chatService.createOrGetRoom(user.id);
+      const id = await createOrGetRoom(user.id);
+      //console.log(`📌 選択されたユーザー ${user.name} → roomId=${id}`);
+      setSelectedUser(user);
+      setSelectedGroup(null);
       setRoomId(id);
-    } catch {
-      setError('チャットルームの取得に失敗しました');
+    } catch (err) {
+      //console.error('❌ ルーム取得エラー:', err);
+      setError('ユーザーとのルームを取得できませんでした');
     }
   };
 
-  const handleSelectGroup = async (group: ChatRoom) => {
+  const handleSelectGroup = (group: ChatRoom) => {
     setSelectedGroup(group);
     setSelectedUser(null);
-    setMessages([]);
-
-    setRoomId(group.id); // グループはIDが既にある
+    setRoomId(group.id);
   };
 
-  const handleSendMessage = async (text: string) => {
-    if (!roomId) return;
+  const createGroupWrapper = async (roomName: string, memberIds: number[]) => {
     try {
-      await chatService.sendMessage(roomId, text);
-      await fetchMessages(roomId);
-    } catch {
-      setError('メッセージの送信に失敗しました');
-    }
-  };
-
-  const createGroup = async (name: string, memberIds: number[]) => {
-    try {
-      await chatService.createGroup(name, memberIds);
-      const data = await chatService.fetchChatRooms();
-      const filtered = data.filter((r: ChatRoom) => r.isGroup === true);
-      setGroups(filtered);
-    } catch {
+      const newGroup = await createGroup(roomName, memberIds);
+      setGroups((prev) => [...prev, newGroup]);
+      setSelectedGroup(newGroup);
+      setSelectedUser(null);
+      setRoomId(newGroup.id);
+    } catch (err) {
+      console.error('❌ グループ作成エラー:', err);
       setError('グループ作成に失敗しました');
     }
   };
@@ -108,11 +91,9 @@ export function useChatRoom() {
     selectedUser,
     selectedGroup,
     roomId,
-    messages,
     error,
     handleSelectUser,
     handleSelectGroup,
-    handleSendMessage,
-    createGroup,
+    createGroup: createGroupWrapper,
   };
 }

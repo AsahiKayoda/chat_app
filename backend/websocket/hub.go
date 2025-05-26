@@ -1,16 +1,17 @@
-//全ての接続中ユーザー（Client）を管理する
 package websocket
 
 import (
 	"log"
 	"encoding/json"
+	"strconv" 
+	"backend/db"
 )
-// Hub manages all active clients and broadcasts messages.
+
 type Hub struct {
-	Clients    map[*Client]bool        // 現在接続中のクライアント
-	Register   chan *Client            // 新しい接続要求
-	Unregister chan *Client            // 切断要求
-	Broadcast  chan []byte             // ブロードキャスト対象のメッセージ
+	Clients    map[*Client]bool
+	Register   chan *Client
+	Unregister chan *Client
+	Broadcast  chan []byte
 }
 
 func (h *Hub) Run() {
@@ -18,7 +19,7 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.Register:
 			h.Clients[client] = true
-			log.Printf("✅ クライアント接続: user_id=%d room_id=%s", client.UserID, client.RoomID)
+			log.Printf("✅ クライアント接続: user_id=%d", client.UserID) // ✅ RoomID削除
 
 		case client := <-h.Unregister:
 			if _, ok := h.Clients[client]; ok {
@@ -27,23 +28,27 @@ func (h *Hub) Run() {
 			}
 
 		case message := <-h.Broadcast:
-			// ✅ message は []byte（JSON）なのでそのまま送信すればOK
+			// Broadcast で受け取った []byte を JSON にパース
+			var msgMap map[string]interface{}
+			if err := json.Unmarshal(message, &msgMap); err != nil {
+				log.Println("unmarshal error in hub:", err)
+				continue
+			}
+
+			roomIDStr, ok := msgMap["room_id"].(string)
+			if !ok {
+				log.Println("❌ room_id not found or invalid")
+				continue
+			}
+
+			roomIDInt, err := strconv.Atoi(roomIDStr)
+			if err != nil {
+				log.Println("❌ room_id parse error:", err)
+				continue
+			}
 
 			for client := range h.Clients {
-				// ✅ 特定のルームに送信する場合は、JSONから一時的にパースする必要がある
-				var msgMap map[string]interface{}
-				if err := json.Unmarshal(message, &msgMap); err != nil {
-					log.Println("unmarshal error in hub:", err)
-					continue
-				}
-
-				roomID, ok := msgMap["room_id"].(string)
-				if !ok {
-					log.Println("invalid room_id in broadcast message")
-					continue
-				}
-
-				if client.RoomID == roomID {
+				if db.IsUserInRoom(client.UserID, roomIDInt) {
 					select {
 					case client.Send <- message:
 					default:

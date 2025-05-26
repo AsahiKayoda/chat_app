@@ -46,8 +46,7 @@ func (h *HandlerImpl) MessagesPost(ctx context.Context, req *gen.MessageInput) (
 
 // GET /messages?receiver_id=X - メッセージ取得（相手とのやり取り）
 func (h *HandlerImpl) MessagesGet(ctx context.Context, params gen.MessagesGetParams) ([]gen.Message, error) {
-	// ✅ JWTから senderID を取得
-	_, ok := middleware.GetUserIDFromContext(ctx)
+	currentUserID, ok := middleware.GetUserIDFromContext(ctx)
 	if !ok {
 		return nil, errors.New("unauthorized")
 	}
@@ -60,17 +59,31 @@ func (h *HandlerImpl) MessagesGet(ctx context.Context, params gen.MessagesGetPar
 		return nil, result.Error
 	}
 
-	// レスポンス整形
 	var resp []gen.Message
 	for _, m := range messages {
+		isRead := gen.OptBool{} // デフォルトは Set: false（＝未定義）
+
+		if m.SenderID == currentUserID {
+			var count int64
+			db.DB.Model(&db.MessageReadModel{}).
+				Where("message_id = ? AND user_id != ?", m.ID, currentUserID).
+				Count(&count)
+			isRead = gen.OptBool{
+				Set:   true,
+				Value: count > 0,
+			}
+		}
+
 		resp = append(resp, gen.Message{
-			ID:         int(m.ID),
-			SenderID:   int(m.SenderID),
+			ID:        int(m.ID),
+			SenderID:  int(m.SenderID),
 			RoomID:    int(m.RoomID),
 			Text:      m.Content,
 			Timestamp: m.CreatedAt,
+			IsRead:    isRead,
 		})
 	}
 
 	return resp, nil
 }
+

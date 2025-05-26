@@ -49,12 +49,30 @@ func (UnimplementedHandler) GetMe(ctx context.Context) (r *User, _ error) {
 	return r, ht.ErrNotImplemented
 }
 
+// GetUnreadMessages implements GetUnreadMessages operation.
+//
+// Get unread messages for current user.
+//
+// GET /messages/unread
+func (UnimplementedHandler) GetUnreadMessages(ctx context.Context) (r []Message, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // LoginPost implements POST /login operation.
 //
 // Login.
 //
 // POST /login
 func (UnimplementedHandler) LoginPost(ctx context.Context, req *LoginRequest) (r LoginPostRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// MarkMessageAsRead implements markMessageAsRead operation.
+//
+// メッセージを既読として登録.
+//
+// POST /messages/{message_id}/read
+func (UnimplementedHandler) MarkMessageAsRead(ctx context.Context, params MarkMessageAsReadParams) (r MarkMessageAsReadRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

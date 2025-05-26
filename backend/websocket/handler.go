@@ -64,12 +64,12 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
         http.Error(w, "Unauthorized", http.StatusUnauthorized)
         return
     }
-
+	/*
     roomID := r.URL.Query().Get("room_id")
     if roomID == "" {
         http.Error(w, "Missing room_id", http.StatusBadRequest)
         return
-    }
+    }*/
 
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {
@@ -81,7 +81,7 @@ func WebSocketHandler(w http.ResponseWriter, r *http.Request) {
 	client := &Client{
 		Conn:   conn,
 		UserID: userID,
-		RoomID: roomID,
+		//RoomID: roomID,
 		Send:   make(chan []byte, 256),
 	}
 

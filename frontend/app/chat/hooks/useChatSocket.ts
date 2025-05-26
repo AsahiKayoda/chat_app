@@ -1,81 +1,113 @@
+// ✅ useChatSocket.ts（最小限の変更で setMessages を外から受け取って使用）
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { Message } from '../types/chat';
-import { fetchMessages } from '../services/chatService';
 import { getToken } from '@/lib/auth';
 
-export function useChatSocket(roomId: number, userId: number) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [socket, setSocket] = useState<WebSocket | null>(null);
+export function useChatSocket(
+  userId: number,
+  setUnreadRoomIds: React.Dispatch<React.SetStateAction<Set<number>>>,
+  currentRoomId: number,
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>> // ✅ 追加
+) {
+  const socketRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
-    if (roomId === -1) return;
-
-    fetchMessages(roomId)
-      .then(setMessages)
-      .catch((err) => console.error("履歴取得に失敗:", err));
-  }, [roomId]);
-
-  useEffect(() => {
-    if (roomId === -1 || userId === -1) return;
-
     const token = getToken();
-    const ws = new WebSocket(`ws://localhost:8080/ws?room_id=${roomId}&token=${token}`);
+    if (!token || userId === -1) {
+      console.warn('❌ WebSocket接続スキップ: トークンまたはuserIdが無効');
+      return;
+    }
 
-    ws.onopen = () => {
-      console.log("✅ WebSocket connected");
+    const socket = new WebSocket(`ws://localhost:8080/ws?token=${token}`);
+    socketRef.current = socket;
+
+    socket.onopen = () => {
+      console.log('✅ WebSocket接続確立');
     };
 
-    ws.onmessage = (event) => {
-    try {
-      console.log("📩 Raw WebSocket message:", event.data);
+    socket.onmessage = (event) => {
+      try {
+        const parsed = JSON.parse(event.data);
 
-      let raw = event.data;
+        if (parsed.type === 'message') {
+          const parsedRoomId = Number(parsed.room_id);
 
-      // 「echo: { ... }」のような文字列だった場合に備えて取り除く
-      if (raw.startsWith("echo: ")) {
-        raw = raw.replace("echo: ", "");
+          const newMessage: Message = {
+            id: parsed.id ?? Date.now(),
+            text: parsed.text,
+            sender_id: parsed.user_id,
+            room_id: parsedRoomId,
+            timestamp: parsed.timestamp,
+            is_read: false,
+          };
+
+          setMessages((prev) => [...prev, newMessage]);
+
+          if (parsed.user_id !== userId && parsedRoomId !== currentRoomId) {
+            setUnreadRoomIds((prev) => {
+              const newSet = new Set(prev);
+              newSet.add(parsedRoomId);
+              return newSet;
+            });
+          }
+        } else if (parsed.type === 'read') {
+          const readMessageIds: number[] = (parsed.message_ids || []).map(Number);
+
+          setMessages((prev) =>
+            prev.map((msg) => {
+              if (
+                msg.sender_id === userId &&
+                readMessageIds.includes(Number(msg.id))
+              ) {
+                return { ...msg, is_read: true };
+              }
+              return msg;
+            })
+          );
+        }
+      } catch (e) {
+        console.error('❌ WebSocketメッセージ解析エラー', e);
       }
+    };
 
-      const payload = JSON.parse(raw);
+    socket.onclose = () => {
+      console.log('❌ WebSocket切断');
+    };
 
-      if (payload.type === "message") {
-        const msg: Message = {
-          id: Date.now(),
-          text: payload.text,
-          sender_id: payload.user_id,
-          room_id: parseInt(payload.room_id),
-          timestamp: payload.timestamp,
-        };
-        setMessages((prev) => [...prev, msg]);
-      }
-    } catch (err) {
-      console.error("📛 JSON parse error:", err);
-      console.warn("⚠️ 受信したデータ:", event.data);
+    return () => {
+      socket.close();
+    };
+  }, [userId]);
+
+  const sendMessage = (text: string, targetRoomId: number) => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      const payload = {
+        type: 'message',
+        user_id: userId,
+        room_id: targetRoomId.toString(),
+        text,
+      };
+      socketRef.current.send(JSON.stringify(payload));
     }
   };
 
-
-    ws.onerror = (err) => console.error("WebSocket error:", err);
-
-    setSocket(ws);
-
-    return () => {
-      ws.close();
-    };
-  }, [roomId, userId]);
-
-  const sendMessage = (text: string) => {
-    const payload = {
-      type: 'message',
-      user_id: userId,
-      room_id: String(roomId),
-      text,
-    };
-    console.log("🚀 sendMessage payload:", payload);
-    socket?.send(JSON.stringify(payload));
+  const sendReadNotification = (roomId: number, messageIds: number[]) => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      const payload = {
+        type: 'read',
+        room_id: roomId.toString(),
+        user_id: userId,
+        message_ids: messageIds,
+      };
+      socketRef.current.send(JSON.stringify(payload));
+      console.log('📤 WebSocket: read通知を送信しました', payload);
+    }
   };
 
-  return { messages, sendMessage };
+  return {
+    sendMessage,
+    sendReadNotification,
+  };
 }

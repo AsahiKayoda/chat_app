@@ -18,7 +18,7 @@ import (
 type Client struct {
 	Conn   *websocket.Conn // WebSocket接続本体
 	UserID int             // 接続ユーザーのID（JWTで取得）
-	RoomID string          // 接続中のチャットルームID（文字列として保持）
+	//RoomID string
 	Send   chan []byte     // 送信待ちメッセージ（JSON化されたデータ）
 }
 
@@ -28,6 +28,16 @@ type MessagePayload struct {
 	UserID int    `json:"user_id"`
 	RoomID string `json:"room_id"`
 	Text   string `json:"text"`
+	MessageIDs []uint  `json:"message_ids"`
+}
+
+type BroadcastMessage struct {
+	Type      string `json:"type"`
+	UserID    int    `json:"user_id"`
+	RoomID    string `json:"room_id"`
+	Text      string `json:"text"`
+	Timestamp string `json:"timestamp"`
+	ID        uint   `json:"id"`
 }
 
 // 時間関連の定数
@@ -64,49 +74,78 @@ func (c *Client) readPump(hub *Hub) {
 
 		var payload MessagePayload
 		if err := json.Unmarshal(msg, &payload); err != nil {
-			log.Println("❌ JSONデコード失敗:", err) // ← 追加②
+			log.Println("❌ JSONデコード失敗:", err) //
 			continue
 		}
 		//log.Printf("✅ JSONパース成功: type=%s user_id=%d room_id=%s", payload.Type, payload.UserID, payload.RoomID) // ← 追加③
+		switch payload.Type {//役割ごとにウェブ通信をスイッチする
+		case "read":
+			log.Printf("📨 read通知受信: room_id=%s", payload.RoomID)
+			for _, msgID := range payload.MessageIDs {
+				err := db.MarkMessageAsRead(db.DB, msgID, uint(payload.UserID))
+				if err != nil {
+					log.Println("DB既読保存失敗:", err)
+				} else {
+					log.Printf("✅ 既読保存 message_id=%d user_id=%d", msgID, payload.UserID)
+				}
+			}
+			readPayload := struct {
+				Type   string `json:"type"`
+				RoomID string `json:"room_id"`
+				MessageIDs []uint  `json:"message_ids"`
+				UserID     int     `json:"user_id"`
+			}{
+				Type:   "read",
+				RoomID: payload.RoomID,
+				MessageIDs: payload.MessageIDs,
+				UserID:     payload.UserID,
+			}
 
+			jsonBytes, err := json.Marshal(readPayload)
+			if err != nil {
+				log.Println("marshal error (read):", err)
+				continue
+			}
 
-		roomIDInt, err := strconv.Atoi(payload.RoomID)
-		if err != nil {
-			log.Println("❌ room_id パース失敗:", err) // ← 追加④
-			continue
+			hub.Broadcast <- jsonBytes
+
+		case "message":
+			// 既存のメッセージ保存処理をここに移動
+			roomIDInt, err := strconv.Atoi(payload.RoomID)
+			if err != nil {
+				log.Println("invalid room_id (not int):", err)
+				continue
+			}
+
+			saved, err := db.SaveMessage(db.DB, roomIDInt, payload.UserID, payload.Text)
+			if err != nil {
+				log.Println("DB保存失敗:", err)
+				continue
+			}
+
+			broadcastPayload := BroadcastMessage{
+				Type:      "message",
+				UserID:    saved.SenderID,
+				RoomID:    strconv.Itoa(saved.RoomID),
+				Text:      saved.Content,
+				Timestamp: saved.CreatedAt.Format(time.RFC3339),
+				ID:        saved.ID,
+			}
+
+			jsonBytes, err := json.Marshal(broadcastPayload)
+			if err != nil {
+				log.Println("marshal error:", err)
+				continue
+			}
+
+			hub.Broadcast <- jsonBytes
+
+		default:
+			log.Println("⚠️ 未対応のtype:", payload.Type)
 		}
-		//log.Println("🚀 DB保存処理を呼び出します") // ← 追加⑤
 
-		
-		saved, err := db.SaveMessage(db.DB, roomIDInt, payload.UserID, payload.Text)
-		if err != nil {
-			log.Println("DB保存失敗:", err)
-			continue
-		}
-		//log.Println("✅ DB保存成功:", saved.ID) // ← 追加⑥
 
-		// ✅ ブロードキャスト用の匿名構造体で timestamp を付ける
-		broadcastPayload := struct {
-			Type      string `json:"type"`
-			UserID    int    `json:"user_id"`
-			RoomID    string `json:"room_id"`
-			Text      string `json:"text"`
-			Timestamp string `json:"timestamp"`
-		}{
-			Type:      "message",
-			UserID:    saved.SenderID,
-			RoomID:    strconv.Itoa(saved.RoomID),
-			Text:      saved.Content,
-			Timestamp: saved.CreatedAt.Format(time.RFC3339),
-		}
 
-		jsonBytes, err := json.Marshal(broadcastPayload)
-		if err != nil {
-			log.Println("marshal error:", err)
-			continue
-		}
-
-		hub.Broadcast <- jsonBytes
 	}
 }
 

@@ -32,12 +32,24 @@ type Handler interface {
 	//
 	// GET /me
 	GetMe(ctx context.Context) (*User, error)
+	// GetUnreadMessages implements GetUnreadMessages operation.
+	//
+	// Get unread messages for current user.
+	//
+	// GET /messages/unread
+	GetUnreadMessages(ctx context.Context) ([]Message, error)
 	// LoginPost implements POST /login operation.
 	//
 	// Login.
 	//
 	// POST /login
 	LoginPost(ctx context.Context, req *LoginRequest) (LoginPostRes, error)
+	// MarkMessageAsRead implements markMessageAsRead operation.
+	//
+	// メッセージを既読として登録.
+	//
+	// POST /messages/{message_id}/read
+	MarkMessageAsRead(ctx context.Context, params MarkMessageAsReadParams) (MarkMessageAsReadRes, error)
 	// MessagesGet implements GET /messages operation.
 	//
 	// Get messages with a user.
