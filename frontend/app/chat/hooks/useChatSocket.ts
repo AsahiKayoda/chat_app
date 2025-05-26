@@ -1,98 +1,129 @@
+// ✅ グローバルWebSocket接続に最適化した useChatSocket.ts
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Message } from '../types/chat';
-import { fetchMessages } from '../services/chatService';
 import { getToken } from '@/lib/auth';
+import { fetchMessages } from '../services/chatService';
 
-export function useChatSocket(roomId: number, userId: number ,setUnreadRoomIds?: React.Dispatch<React.SetStateAction<Set<number>>>) {
+export function useChatSocket(
+  userId: number,
+  setUnreadRoomIds: React.Dispatch<React.SetStateAction<Set<number>>>,
+  currentRoomId: number | null
+) {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [socket, setSocket] = useState<WebSocket | null>(null);
+  const socketRef = useRef<WebSocket | null>(null);
 
+  // ✅ ルーム切替時にメッセージをRESTで取得（WebSocketとは独立）
   useEffect(() => {
-    if (roomId === -1) return;
+    if (currentRoomId === null || userId === -1) return;
 
-    fetchMessages(roomId)
-      .then(setMessages)
-      .catch((err) => console.error("履歴取得に失敗:", err));
-  }, [roomId]);
+    fetchMessages(currentRoomId)
+      .then((initialMessages) => {
+        setMessages((prev) => {
+          const others = prev.filter((msg) => msg.room_id !== currentRoomId);
+          return [...others, ...initialMessages];
+        });
+      });
+  }, [currentRoomId, userId]);
 
+  // ✅ WebSocket接続は userId のみ依存（1回だけ接続）
   useEffect(() => {
-    if (roomId === -1 || userId === -1) return;
-
     const token = getToken();
-    const ws = new WebSocket(`ws://localhost:8080/ws?room_id=${roomId}&token=${token}`);
+    if (!token || userId === -1) {
+      console.warn('❌ WebSocket接続スキップ: トークンまたはuserIdが無効');
+      return;
+    }
 
-    ws.onopen = () => {
-      console.log("✅ WebSocket connected");
+    const socket = new WebSocket(`ws://localhost:8080/ws?token=${token}`);
+    socketRef.current = socket;
+
+    socket.onopen = () => {
+      console.log('✅ WebSocket接続確立');
     };
 
-    ws.onmessage = (event) => {
-      console.log("📩 Raw WebSocket message:", event.data); // ✅ このログが絶対出るべき！
-    try {
-      console.log("📩 Raw WebSocket message:", event.data);
+    socket.onmessage = (event) => {
+      try {
+        const parsed = JSON.parse(event.data);
 
-      let raw = event.data;
+        if (parsed.type === 'message') {
+          const parsedRoomId = Number(parsed.room_id);
 
-      // 「echo: { ... }」のような文字列だった場合に備えて取り除く
-      if (raw.startsWith("echo: ")) {
-        raw = raw.replace("echo: ", "");
-      }
+          const newMessage: Message = {
+            id: parsed.id , // 仮ID fallback
+            text: parsed.text,
+            sender_id: parsed.user_id,
+            room_id: parsedRoomId,
+            timestamp: parsed.timestamp,
+            is_read: false,
+          };
 
-      const payload = JSON.parse(raw);
-      console.log("📦 payload:", payload); // ← payloadの中身を出力する
+          setMessages((prev) => [...prev, newMessage]);
 
-      if (payload.type === "message") {
-        const msg: Message = {
-          id: Date.now(),
-          text: payload.text,
-          sender_id: payload.user_id,
-          room_id: parseInt(payload.room_id),
-          timestamp: payload.timestamp,
-        };
-        setMessages((prev) => [...prev, msg]);
-      }
-      if (payload.type === "read") {
-        console.log("📨 read event received:", payload.room_id);
+          if (parsed.user_id !== userId && parsedRoomId !== currentRoomId) {
+            setUnreadRoomIds((prev) => {
+              const newSet = new Set(prev);
+              newSet.add(parsedRoomId);
+              return newSet;
+            });
+          }
+        } else if (parsed.type === 'read') {
+          const readMessageIds: number[] = (parsed.message_ids || []).map(Number);
 
-        if (typeof setUnreadRoomIds === "function") {
-          setUnreadRoomIds((prev) => {
-            const updated = new Set(prev);
-            updated.delete(Number(payload.room_id));
-            return updated;
-          });
-        } else {
-          console.warn("⚠️ setUnreadRoomIds not defined");
+          setMessages((prev) =>
+            prev.map((msg) => {
+              if (
+                msg.sender_id === userId &&
+                readMessageIds.includes(Number(msg.id))
+              ) {
+                return { ...msg, is_read: true };
+              }
+              return msg;
+            })
+          );
         }
+      } catch (e) {
+        console.error('❌ WebSocketメッセージ解析エラー', e);
       }
+    };
 
+    socket.onclose = () => {
+      console.log('❌ WebSocket切断');
+    };
 
-    } catch (err) {
-      console.error("📛 JSON parse error:", err);
-      console.warn("⚠️ 受信したデータ:", event.data);
+    return () => {
+      socket.close();
+    };
+  }, [userId]);
+
+  const sendMessage = (text: string, targetRoomId: number) => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      const payload = {
+        type: 'message',
+        user_id: userId,
+        room_id: targetRoomId.toString(),
+        text,
+      };
+      socketRef.current.send(JSON.stringify(payload));
     }
   };
 
-
-    ws.onerror = (err) => console.error("WebSocket error:", err);
-
-    setSocket(ws);
-
-    return () => {
-      ws.close();
-    };
-  }, [roomId, userId]);
-
-  const sendMessage = (text: string) => {
-    const payload = {
-      type: 'message',
-      user_id: userId,
-      room_id: String(roomId),
-      text,
-    };
-    console.log("🚀 sendMessage payload:", payload);
-    socket?.send(JSON.stringify(payload));
+  const sendReadNotification = (roomId: number, messageIds: number[]) => {
+    if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {
+      const payload = {
+        type: 'read',
+        room_id: roomId.toString(),
+        user_id: userId,
+        message_ids: messageIds,
+      };
+      socketRef.current.send(JSON.stringify(payload));
+      console.log('📤 WebSocket: read通知を送信しました', payload);
+    }
   };
 
-  return { messages, sendMessage };
+  return {
+    messages,
+    sendMessage,
+    sendReadNotification,
+  };
 }

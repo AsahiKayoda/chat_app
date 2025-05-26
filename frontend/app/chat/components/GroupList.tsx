@@ -22,7 +22,7 @@ export default function GroupList({ groups, selectedGroup, onSelectGroup, onCrea
       {groups
         .filter((group) => group.isGroup === true)
         .map((group) => {
-          const hasUnread = unreadRoomIds.has(group.id);
+          const hasUnread = unreadRoomIds.has(Number(group.id));
 
           return (
             <div

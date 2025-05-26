@@ -1,3 +1,4 @@
+// ✅ UserList.tsx（型変換とログ追加で未読バッジを確実に表示）
 'use client'
 
 import styles from '../chat.module.css'; 
@@ -15,7 +16,6 @@ type Props = {
   unreadRoomIds?: Set<number>;
 };
 
-// ✅ ユーザー一覧を表示する UI コンポーネント
 export default function UserList({
   users,
   selectedUser,
@@ -23,14 +23,19 @@ export default function UserList({
   currentUserId,
   unreadRoomIds = new Set(),
 }: Props) {
+  //console.log("🧪 UserList users:", users);
+  //console.log("🧪 UnreadRoomIds:", Array.from(unreadRoomIds));
+
   return (
     <div className={styles.sidebar}>
       <h3>ユーザー一覧</h3>
       {users
         .filter((user) => user.id !== currentUserId)
         .map((user) => {
-          
-        const hasUnread = !!user.roomId && unreadRoomIds.has(user.roomId);
+          const roomIdNum = Number(user.roomId);
+          const hasUnread = !!roomIdNum && unreadRoomIds.has(roomIdNum);
+
+          //console.log("🔍 user:", user.name, "roomId:", user.roomId, "型:", typeof user.roomId, "→ hasUnread:", hasUnread);
 
           return (
             <div

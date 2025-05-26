@@ -3,6 +3,8 @@ package websocket
 import (
 	"log"
 	"encoding/json"
+	"strconv" 
+	"backend/db"
 )
 
 type Hub struct {
@@ -17,7 +19,7 @@ func (h *Hub) Run() {
 		select {
 		case client := <-h.Register:
 			h.Clients[client] = true
-			log.Printf("✅ クライアント接続: user_id=%d room_id=%s", client.UserID, client.RoomID)
+			log.Printf("✅ クライアント接続: user_id=%d", client.UserID) // ✅ RoomID削除
 
 		case client := <-h.Unregister:
 			if _, ok := h.Clients[client]; ok {
@@ -33,15 +35,20 @@ func (h *Hub) Run() {
 				continue
 			}
 
-			roomID, ok := msgMap["room_id"].(string)
+			roomIDStr, ok := msgMap["room_id"].(string)
 			if !ok {
-				log.Println("invalid room_id in broadcast message")
+				log.Println("❌ room_id not found or invalid")
 				continue
 			}
 
-			// 同じルームのクライアントにのみ送信
+			roomIDInt, err := strconv.Atoi(roomIDStr)
+			if err != nil {
+				log.Println("❌ room_id parse error:", err)
+				continue
+			}
+
 			for client := range h.Clients {
-				if client.RoomID == roomID {
+				if db.IsUserInRoom(client.UserID, roomIDInt) {
 					select {
 					case client.Send <- message:
 					default:

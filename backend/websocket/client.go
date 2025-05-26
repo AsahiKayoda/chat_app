@@ -18,7 +18,7 @@ import (
 type Client struct {
 	Conn   *websocket.Conn // WebSocket接続本体
 	UserID int             // 接続ユーザーのID（JWTで取得）
-	RoomID string          // 接続中のチャットルームID（文字列として保持）
+	//RoomID string
 	Send   chan []byte     // 送信待ちメッセージ（JSON化されたデータ）
 }
 
@@ -28,6 +28,7 @@ type MessagePayload struct {
 	UserID int    `json:"user_id"`
 	RoomID string `json:"room_id"`
 	Text   string `json:"text"`
+	MessageIDs []uint  `json:"message_ids"`
 }
 
 type BroadcastMessage struct {
@@ -36,6 +37,7 @@ type BroadcastMessage struct {
 	RoomID    string `json:"room_id"`
 	Text      string `json:"text"`
 	Timestamp string `json:"timestamp"`
+	ID        uint   `json:"id"`
 }
 
 // 時間関連の定数
@@ -79,13 +81,24 @@ func (c *Client) readPump(hub *Hub) {
 		switch payload.Type {//役割ごとにウェブ通信をスイッチする
 		case "read":
 			log.Printf("📨 read通知受信: room_id=%s", payload.RoomID)
-
+			for _, msgID := range payload.MessageIDs {
+				err := db.MarkMessageAsRead(db.DB, msgID, uint(payload.UserID))
+				if err != nil {
+					log.Println("DB既読保存失敗:", err)
+				} else {
+					log.Printf("✅ 既読保存 message_id=%d user_id=%d", msgID, payload.UserID)
+				}
+			}
 			readPayload := struct {
 				Type   string `json:"type"`
 				RoomID string `json:"room_id"`
+				MessageIDs []uint  `json:"message_ids"`
+				UserID     int     `json:"user_id"`
 			}{
 				Type:   "read",
 				RoomID: payload.RoomID,
+				MessageIDs: payload.MessageIDs,
+				UserID:     payload.UserID,
 			}
 
 			jsonBytes, err := json.Marshal(readPayload)
@@ -116,6 +129,7 @@ func (c *Client) readPump(hub *Hub) {
 				RoomID:    strconv.Itoa(saved.RoomID),
 				Text:      saved.Content,
 				Timestamp: saved.CreatedAt.Format(time.RFC3339),
+				ID:        saved.ID,
 			}
 
 			jsonBytes, err := json.Marshal(broadcastPayload)

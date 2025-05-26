@@ -1,3 +1,4 @@
+// ✅ ChatLayout.tsx（安全でシンプルに戻したバージョン、Hookの順守）
 'use client';
 
 import { useChatRoom } from '../hooks/useChatRoom';
@@ -38,26 +39,16 @@ export default function ChatLayout() {
     router.push('/login');
   };
 
-  const shouldConnectSocket = roomId !== null && currentUserId !== null;
-  const { messages, sendMessage } = useChatSocket(
-    shouldConnectSocket ? roomId : -1,
-    shouldConnectSocket ? currentUserId : -1,
-    setUnreadRoomIds
+  // ✅ 無条件に useChatSocket を呼び、内部でガードする
+  const {
+    messages,
+    sendMessage,
+    sendReadNotification
+  } = useChatSocket(
+    currentUserId ?? -1,
+    setUnreadRoomIds,
+    roomId ?? -1
   );
-
- /* // ✅ デバッグログ追加
-  console.log("✅ ChatLayout state:");
-  console.log("  userLoading:", userLoading);
-  console.log("  userError:", userError);
-  console.log("  currentUserId:", currentUserId);
-  console.log("  selectedUser:", selectedUser);
-  console.log("  selectedGroup:", selectedGroup);
-  console.log("  roomId:", roomId);
-  console.log("  users:", users);
-  console.log("  groups:", groups);
-  console.log("  messages:", messages);  
-*/
-  console.log("✅ unreadRoomIds:", Array.from(unreadRoomIds));
 
   if (userLoading) return <div>ユーザー情報を読み込み中...</div>;
   if (userError || !currentUserId) return <div>ユーザー情報の取得に失敗しました</div>;
@@ -96,14 +87,17 @@ export default function ChatLayout() {
             {error && <p style={{ color: 'red' }}>{error}</p>}
 
             <MessageList
-              messages={messages}
+              messages={messages.filter((msg) => msg.room_id === roomId)}
               selectedUser={selectedUser}
               selectedGroup={selectedGroup}
               currentUserId={currentUserId ?? -1}
               users={users}
+              roomId={roomId}
+              sendReadNotification={sendReadNotification}
+              setUnreadRoomIds={setUnreadRoomIds}
             />
 
-            <MessageForm onSubmit={sendMessage} />
+            <MessageForm onSubmit={(text) => sendMessage(text, roomId)} />
           </>
         )}
       </div>

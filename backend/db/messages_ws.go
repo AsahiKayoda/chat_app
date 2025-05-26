@@ -34,3 +34,19 @@ func MarkMessageAsRead(db *gorm.DB, messageID, userID uint) error {
 	// INSERT ON CONFLICT DO NOTHING
 	return db.Clauses(clause.OnConflict{DoNothing: true}).Create(read).Error
 }
+
+func IsUserInRoom(userID int, roomID int) bool {
+	var count int64
+	err := DB.
+		Model(&RoomMemberModel{}).
+		Where("user_id = ? AND room_id = ?", userID, roomID).
+		Count(&count).Error
+
+	if err != nil {
+		log.Println("❌ ユーザーのルーム所属チェック失敗:", err)
+		return false
+	}
+
+	return count > 0
+}
+
