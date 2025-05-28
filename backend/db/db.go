@@ -79,3 +79,13 @@ type MessageReadModel struct {
 func (MessageReadModel) TableName() string {
 	return "message_reads"
 }
+
+type MessageAttachmentModel struct {
+	ID        uint      `gorm:"primaryKey"`
+	MessageID uint
+	FileName  string
+	CreatedAt time.Time
+}
+func (MessageAttachmentModel) TableName() string {
+	return "message_attachments"
+}

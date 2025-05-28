@@ -125,7 +125,11 @@ export default function ChatLayout() {
               setUnreadRoomIds={setUnreadRoomIds}
             />
 
-            <MessageForm onSubmit={(text) => sendMessage(text, roomId)} />
+           <MessageForm
+              roomId={roomId}
+              currentUserId={currentUserId}
+              onMessageSent={() => fetchMessages(roomId)}
+            />
           </>
         )}
       </div>

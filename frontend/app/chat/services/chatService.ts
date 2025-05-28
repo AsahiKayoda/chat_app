@@ -12,9 +12,12 @@ export async function fetchMessages(roomId: number): Promise<Message[]> {
   return res.data;
 }
 
-export async function sendMessage(roomId: number, text: string): Promise<void> {
-  await api.post('/messages', { room_id: roomId, text });
+export async function sendMessage(roomId: number, text: string): Promise<{ id: number }> {
+  const res = await api.post('/messages', { room_id: roomId, text });
+  console.log("✅ sendMessage のレスポンス:", res.data); 
+  return res.data; 
 }
+
 
 export async function fetchUsers(): Promise<User[]> {
   const res = await api.get('/users');
@@ -65,5 +68,19 @@ export async function fetchUnreadMessages(): Promise<Message[]> {
   const res = await api.get('/messages/unread');
   return res.data;
 } 
+
+
+export const uploadAttachment = async (messageId: number, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await api.post(`/messages/${messageId}/attachments`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data', // ✅ フォーム形式を明示
+    },
+  });
+
+  return res.data;
+};
 
 

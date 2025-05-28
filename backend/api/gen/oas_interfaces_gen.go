@@ -13,6 +13,10 @@ type SignupPostRes interface {
 	signupPostRes()
 }
 
+type UploadMessageAttachmentRes interface {
+	uploadMessageAttachmentRes()
+}
+
 type UsersGetRes interface {
 	usersGetRes()
 }

@@ -70,6 +70,18 @@ export default function MessageList({
             {!isMine && <div className={styles.senderName}>{senderName}</div>}
             <div>{msg.text}</div>
 
+            {/* ✅ 添付画像の表示 */}
+            {msg.attachments &&
+              msg.attachments.map((att) => (
+                <div key={att.id} className={styles.attachment}>
+                  <img
+                    src={att.url}
+                    alt="添付画像"
+                    className={styles.attachmentImage}
+                  />
+                </div>
+              ))}
+
             {isMine && msg.is_read && (
               <div className={styles.readStatus}>既読</div>
             )}
@@ -77,5 +89,4 @@ export default function MessageList({
         );
       })}
     </div>
-  );
-}
+  );}

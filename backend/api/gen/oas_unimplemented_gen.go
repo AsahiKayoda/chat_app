@@ -103,6 +103,15 @@ func (UnimplementedHandler) SignupPost(ctx context.Context, req *UserInput) (r S
 	return r, ht.ErrNotImplemented
 }
 
+// UploadMessageAttachment implements uploadMessageAttachment operation.
+//
+// メッセージに画像を添付する.
+//
+// POST /messages/{message_id}/attachments
+func (UnimplementedHandler) UploadMessageAttachment(ctx context.Context, req *UploadMessageAttachmentReq, params UploadMessageAttachmentParams) (r UploadMessageAttachmentRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // UsersGet implements GET /users operation.
 //
 // Get all users.

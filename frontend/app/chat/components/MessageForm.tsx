@@ -1,35 +1,77 @@
-// app/chat/MessageForm.tsx
 'use client'
 
 import { useState } from 'react';
 import styles from '../chat.module.css';
-
+import { sendMessage, uploadAttachment } from '../services/chatService';
 
 type Props = {
-  onSubmit: (text: string) => void;
+  roomId: number;
+  currentUserId: number;
+  onMessageSent: () => void; // メッセージ取得トリガーなど
 };
 
-// ✅ メッセージ入力・送信フォームのコンポーネント
-export default function MessageForm({ onSubmit }: Props) {
+export default function MessageForm({ roomId, currentUserId, onMessageSent }: Props) {
   const [text, setText] = useState('');
   const [error, setError] = useState('');
+  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [previewFile, setPreviewFile] = useState<File | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-    if (!text.trim()) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setError("画像サイズが大きすぎます（最大5MB）");
+      return;
+    }
 
-    try {
-      await onSubmit(text.trim());
+    const objectUrl = URL.createObjectURL(file);
+    setPreviewUrl(objectUrl);
+    setPreviewFile(file);
+  };
+
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
+
+  if (!text.trim() && !previewFile) return;
+
+  try {
+
+    // ✅ 空の text のときは自動補完（画像のみ送信対策）
+    const fallbackText = text.trim() || '画像を送信しました';
+    // ✅ sendMessage を呼び出して messageId を取得
+    const message = await sendMessage(Number(roomId), fallbackText);
+    console.log('✅ メッセージ送信成功: message.id =', message.id);
+    // ✅ 添付ファイルがある場合にアップロード
+    if (previewFile) {
+      await uploadAttachment(message.id, previewFile); // ← sendMessage が返す message.id を使う
+      setPreviewFile(null);
+      setPreviewUrl(null);
+    }
+
       setText('');
-    } catch (err: any) {
+      onMessageSent(); // メッセージ再取得トリガー
+    } catch (err) {
+      console.error(err);
       setError('送信に失敗しました');
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className={styles.inputArea}>
+      {/* 📎 ファイル選択ボタン */}
+      <label className={styles.fileButton}>
+        📎
+        <input
+          type="file"
+          accept="image/*"
+          onChange={handleFileChange}
+          style={{ display: 'none' }}
+        />
+      </label>
+
+      {/* テキスト入力 */}
       <input
         type="text"
         placeholder="メッセージを入力"
@@ -37,6 +79,19 @@ export default function MessageForm({ onSubmit }: Props) {
         onChange={(e) => setText(e.target.value)}
         className={styles.messageInput}
       />
+
+      {/* プレビュー画像 */}
+      {previewUrl && (
+        <div className={styles.imagePreview}>
+          <img src={previewUrl} alt="プレビュー画像" className={styles.attachmentImage} />
+          <button type="button" onClick={() => {
+            setPreviewUrl(null);
+            setPreviewFile(null);
+          }}>✖</button>
+        </div>
+      )}
+
+      {/* 送信ボタン */}
       <button type="submit" className={styles.sendButton}>送信</button>
 
       {error && <p style={{ color: 'red', marginTop: 8 }}>{error}</p>}

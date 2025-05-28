@@ -70,6 +70,10 @@ func main() {
 	// ✅ ServeMux にルート登録
 	mux := http.NewServeMux()
 
+	// ✅ 認証なしで公開する静的ファイル：/uploads/*
+	fs := http.StripPrefix("/uploads/", http.FileServer(http.Dir("uploads")))
+	mux.Handle("/uploads/", withCORS(fs)) // ← 認証なしでCORSつき
+
 	// /ws は WebSocket 専用
 	mux.HandleFunc("/ws", websocket.WebSocketHandler)
 

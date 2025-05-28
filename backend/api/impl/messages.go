@@ -14,8 +14,6 @@ import (
 
 // POST /messages - メッセージ送信
 func (h *HandlerImpl) MessagesPost(ctx context.Context, req *gen.MessageInput) (*gen.Message, error) {
-
-
 	
 	senderID, ok := middleware.GetUserIDFromContext(ctx)
 	if !ok {
@@ -61,8 +59,7 @@ func (h *HandlerImpl) MessagesGet(ctx context.Context, params gen.MessagesGetPar
 
 	var resp []gen.Message
 	for _, m := range messages {
-		isRead := gen.OptBool{} // デフォルトは Set: false（＝未定義）
-
+		isRead := gen.OptBool{}
 		if m.SenderID == currentUserID {
 			var count int64
 			db.DB.Model(&db.MessageReadModel{}).
@@ -74,15 +71,32 @@ func (h *HandlerImpl) MessagesGet(ctx context.Context, params gen.MessagesGetPar
 			}
 		}
 
+		// ✅ 添付ファイルの取得
+		attachments := []gen.Attachment{}
+		dbAttachments, err := db.GetAttachmentsByMessageID(db.DB, m.ID)
+		if err == nil {
+			for _, a := range dbAttachments {
+				attachments = append(attachments, gen.Attachment{
+					ID:        gen.NewOptInt(int(a.ID)),
+					MessageID: gen.NewOptInt(int(a.MessageID)),
+					FileName:  gen.NewOptString(a.FileName),
+					URL:       gen.NewOptString("http://localhost:8080/uploads/" + a.FileName),
+					CreatedAt: gen.NewOptDateTime(a.CreatedAt),
+				})
+			}
+		}
+
 		resp = append(resp, gen.Message{
-			ID:        int(m.ID),
-			SenderID:  int(m.SenderID),
-			RoomID:    int(m.RoomID),
-			Text:      m.Content,
-			Timestamp: m.CreatedAt,
-			IsRead:    isRead,
+			ID:          int(m.ID),
+			SenderID:    int(m.SenderID),
+			RoomID:      int(m.RoomID),
+			Text:        m.Content,
+			Timestamp:   m.CreatedAt,
+			IsRead:      isRead,
+			Attachments: attachments, 
 		})
 	}
+
 
 	return resp, nil
 }

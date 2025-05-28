@@ -68,6 +68,12 @@ type Handler interface {
 	//
 	// POST /signup
 	SignupPost(ctx context.Context, req *UserInput) (SignupPostRes, error)
+	// UploadMessageAttachment implements uploadMessageAttachment operation.
+	//
+	// メッセージに画像を添付する.
+	//
+	// POST /messages/{message_id}/attachments
+	UploadMessageAttachment(ctx context.Context, req *UploadMessageAttachmentReq, params UploadMessageAttachmentParams) (UploadMessageAttachmentRes, error)
 	// UsersGet implements GET /users operation.
 	//
 	// Get all users.

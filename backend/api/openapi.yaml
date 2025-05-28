@@ -159,6 +159,39 @@ paths:
                   $ref: '#/components/schemas/Message'
 
 
+  /messages/{message_id}/attachments:
+    post:
+      summary: メッセージに画像を添付する
+      operationId: uploadMessageAttachment
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: 添付ファイルのアップロード成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attachment'
+        '400':
+          description: リクエスト不正
+        '404':
+          description: メッセージが見つからない
+
+
 
   /chat-rooms:
     post:
@@ -342,6 +375,25 @@ components:
           format: date-time
         is_read:             
           type: boolean          
+        attachments:         
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: integer
+        message_id:
+          type: integer
+        file_name:
+          type: string
+        url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
 
     ErrorResponse:
       type: object

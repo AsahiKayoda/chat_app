@@ -278,6 +278,38 @@ func encodeSignupPostResponse(response SignupPostRes, w http.ResponseWriter, spa
 	}
 }
 
+func encodeUploadMessageAttachmentResponse(response UploadMessageAttachmentRes, w http.ResponseWriter, span trace.Span) error {
+	switch response := response.(type) {
+	case *Attachment:
+		w.Header().Set("Content-Type", "application/json; charset=utf-8")
+		w.WriteHeader(201)
+		span.SetStatus(codes.Ok, http.StatusText(201))
+
+		e := new(jx.Encoder)
+		response.Encode(e)
+		if _, err := e.WriteTo(w); err != nil {
+			return errors.Wrap(err, "write")
+		}
+
+		return nil
+
+	case *UploadMessageAttachmentBadRequest:
+		w.WriteHeader(400)
+		span.SetStatus(codes.Error, http.StatusText(400))
+
+		return nil
+
+	case *UploadMessageAttachmentNotFound:
+		w.WriteHeader(404)
+		span.SetStatus(codes.Error, http.StatusText(404))
+
+		return nil
+
+	default:
+		return errors.Errorf("unexpected response type: %T", response)
+	}
+}
+
 func encodeUsersGetResponse(response UsersGetRes, w http.ResponseWriter, span trace.Span) error {
 	switch response := response.(type) {
 	case *UsersGetOKApplicationJSON:

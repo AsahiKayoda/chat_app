@@ -211,26 +211,62 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 							break
 						}
 						switch elem[0] {
-						case '/': // Prefix: "/read"
+						case '/': // Prefix: "/"
 
-							if l := len("/read"); len(elem) >= l && elem[0:l] == "/read" {
+							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
 							if len(elem) == 0 {
-								// Leaf node.
-								switch r.Method {
-								case "POST":
-									s.handleMarkMessageAsReadRequest([1]string{
-										args[0],
-									}, elemIsEscaped, w, r)
-								default:
-									s.notAllowed(w, r, "POST")
+								break
+							}
+							switch elem[0] {
+							case 'a': // Prefix: "attachments"
+
+								if l := len("attachments"); len(elem) >= l && elem[0:l] == "attachments" {
+									elem = elem[l:]
+								} else {
+									break
 								}
 
-								return
+								if len(elem) == 0 {
+									// Leaf node.
+									switch r.Method {
+									case "POST":
+										s.handleUploadMessageAttachmentRequest([1]string{
+											args[0],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, "POST")
+									}
+
+									return
+								}
+
+							case 'r': // Prefix: "read"
+
+								if l := len("read"); len(elem) >= l && elem[0:l] == "read" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch r.Method {
+									case "POST":
+										s.handleMarkMessageAsReadRequest([1]string{
+											args[0],
+										}, elemIsEscaped, w, r)
+									default:
+										s.notAllowed(w, r, "POST")
+									}
+
+									return
+								}
+
 							}
 
 						}
@@ -559,28 +595,66 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 							break
 						}
 						switch elem[0] {
-						case '/': // Prefix: "/read"
+						case '/': // Prefix: "/"
 
-							if l := len("/read"); len(elem) >= l && elem[0:l] == "/read" {
+							if l := len("/"); len(elem) >= l && elem[0:l] == "/" {
 								elem = elem[l:]
 							} else {
 								break
 							}
 
 							if len(elem) == 0 {
-								// Leaf node.
-								switch method {
-								case "POST":
-									r.name = MarkMessageAsReadOperation
-									r.summary = "メッセージを既読として登録"
-									r.operationID = "markMessageAsRead"
-									r.pathPattern = "/messages/{message_id}/read"
-									r.args = args
-									r.count = 1
-									return r, true
-								default:
-									return
+								break
+							}
+							switch elem[0] {
+							case 'a': // Prefix: "attachments"
+
+								if l := len("attachments"); len(elem) >= l && elem[0:l] == "attachments" {
+									elem = elem[l:]
+								} else {
+									break
 								}
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch method {
+									case "POST":
+										r.name = UploadMessageAttachmentOperation
+										r.summary = "メッセージに画像を添付する"
+										r.operationID = "uploadMessageAttachment"
+										r.pathPattern = "/messages/{message_id}/attachments"
+										r.args = args
+										r.count = 1
+										return r, true
+									default:
+										return
+									}
+								}
+
+							case 'r': // Prefix: "read"
+
+								if l := len("read"); len(elem) >= l && elem[0:l] == "read" {
+									elem = elem[l:]
+								} else {
+									break
+								}
+
+								if len(elem) == 0 {
+									// Leaf node.
+									switch method {
+									case "POST":
+										r.name = MarkMessageAsReadOperation
+										r.summary = "メッセージを既読として登録"
+										r.operationID = "markMessageAsRead"
+										r.pathPattern = "/messages/{message_id}/read"
+										r.args = args
+										r.count = 1
+										return r, true
+									default:
+										return
+									}
+								}
+
 							}
 
 						}
