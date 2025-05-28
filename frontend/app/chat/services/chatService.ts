@@ -12,11 +12,25 @@ export async function fetchMessages(roomId: number): Promise<Message[]> {
   return res.data;
 }
 
-export async function sendMessage(roomId: number, text: string): Promise<{ id: number }> {
-  const res = await api.post('/messages', { room_id: roomId, text });
-  console.log("✅ sendMessage のレスポンス:", res.data); 
-  return res.data; 
+export async function sendMessage(
+  roomId: number,
+  text: string,
+  mentionUsernames?: string[]
+): Promise<{ id: number }> {
+  const payload: any = {
+    room_id: roomId,
+    text,
+  };
+
+  if (mentionUsernames?.length) {
+    payload.mention_usernames = mentionUsernames;
+  }
+
+  const res = await api.post('/messages', payload);
+  console.log('✅ sendMessage のレスポンス:', res.data);
+  return res.data;
 }
+
 
 
 export async function fetchUsers(): Promise<User[]> {
@@ -82,5 +96,10 @@ export const uploadAttachment = async (messageId: number, file: File) => {
 
   return res.data;
 };
+
+export async function getMentions() {
+  const res = await api.get('/mentions');
+  return res.data; // ← MentionedMessage[] が返る想定
+}
 
 

@@ -89,3 +89,12 @@ type MessageAttachmentModel struct {
 func (MessageAttachmentModel) TableName() string {
 	return "message_attachments"
 }
+
+type MentionModel struct {
+	MessageID       uint `gorm:"primaryKey"`
+	MentionTargetID uint `gorm:"primaryKey"`
+}
+
+func (MentionModel) TableName() string {
+	return "mentions"
+}

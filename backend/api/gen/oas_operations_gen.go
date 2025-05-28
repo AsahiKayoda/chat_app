@@ -13,6 +13,7 @@ const (
 	GetUnreadMessagesOperation       OperationName = "GetUnreadMessages"
 	LoginPostOperation               OperationName = "LoginPost"
 	MarkMessageAsReadOperation       OperationName = "MarkMessageAsRead"
+	MentionsGetOperation             OperationName = "MentionsGet"
 	MessagesGetOperation             OperationName = "MessagesGet"
 	MessagesPostOperation            OperationName = "MessagesPost"
 	SignupPostOperation              OperationName = "SignupPost"

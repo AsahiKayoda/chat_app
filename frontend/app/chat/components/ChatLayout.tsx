@@ -8,15 +8,19 @@ import { useChatSocket } from '../hooks/useChatSocket';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { removeToken } from '@/lib/auth';
-import { fetchMessages, fetchUnreadMessages } from '../services/chatService';
+import { fetchMessages, fetchUnreadMessages, getMentions } from '../services/chatService';
 
 import UserList from './UserList';
 import GroupList from './GroupList';
 import MessageList from './MessageList';
 import MessageForm from './MessageForm';
+import MentionButton from './MentionBotton'
+import MentionModal from './MentionModel'
 import CreateGroupModal from './CreateGroupModal';
-import styles from '../chat.module.css';
+
+import styles from '../chat.module.css'
 import { Message } from '../types/chat';
+import { Mention } from '../types/chat';
 
 export default function ChatLayout() {
   const {
@@ -33,6 +37,8 @@ export default function ChatLayout() {
 
   const { currentUserId, loading: userLoading, error: userError } = useCurrentUser();
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showMentionModal, setShowMentionModal] = useState(false);
+  const [mentions, setMentions] = useState<Mention[]>([]);
   const [unreadRoomIds, setUnreadRoomIds] = useState<Set<number>>(new Set());
   const [messages, setMessages] = useState<Message[]>([]);
   const router = useRouter();
@@ -45,6 +51,9 @@ export default function ChatLayout() {
   // ✅ ログイン後、一度だけ未読情報取得
   useEffect(() => {
     if (!currentUserId) return;
+    getMentions()
+    .then((data) => setMentions(data))
+    .catch((err) => console.error('🔴 mentions取得失敗', err));
     fetchUnreadMessages()
       .then((msgs) => {
         const roomIds = new Set(msgs.map((m) => m.room_id));
@@ -107,6 +116,11 @@ export default function ChatLayout() {
           <>
             <div className={styles.chatHeader}>
               <h3>{selectedUser?.name || selectedGroup?.roomName || ''}</h3>
+              {/* 🔔 メンションボタン */}
+              <MentionButton count={mentions.length} onClick={() => setShowMentionModal(true)} />
+              {showMentionModal && (
+                <MentionModal mentions={mentions} onClose={() => setShowMentionModal(false)} />
+              )}    
               <button onClick={handleLogout} className={styles.logoutButton}>
                 ログアウト
               </button>

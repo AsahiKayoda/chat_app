@@ -69,6 +69,20 @@ func (s *Attachment) SetCreatedAt(val OptDateTime) {
 
 func (*Attachment) uploadMessageAttachmentRes() {}
 
+type BearerAuth struct {
+	Token string
+}
+
+// GetToken returns the value of Token.
+func (s *BearerAuth) GetToken() string {
+	return s.Token
+}
+
+// SetToken sets the value of Token.
+func (s *BearerAuth) SetToken(val string) {
+	s.Token = val
+}
+
 // Ref: #/components/schemas/ChatRoom
 type ChatRoom struct {
 	ID        OptNilInt      `json:"id"`
@@ -326,6 +340,79 @@ type MarkMessageAsReadUnauthorized ErrorResponse
 
 func (*MarkMessageAsReadUnauthorized) markMessageAsReadRes() {}
 
+// Ref: #/components/schemas/MentionedMessage
+type MentionedMessage struct {
+	MessageID OptInt      `json:"message_id"`
+	Content   OptString   `json:"content"`
+	RoomID    OptInt      `json:"room_id"`
+	SenderID  OptInt      `json:"sender_id"`
+	CreatedAt OptDateTime `json:"created_at"`
+}
+
+// GetMessageID returns the value of MessageID.
+func (s *MentionedMessage) GetMessageID() OptInt {
+	return s.MessageID
+}
+
+// GetContent returns the value of Content.
+func (s *MentionedMessage) GetContent() OptString {
+	return s.Content
+}
+
+// GetRoomID returns the value of RoomID.
+func (s *MentionedMessage) GetRoomID() OptInt {
+	return s.RoomID
+}
+
+// GetSenderID returns the value of SenderID.
+func (s *MentionedMessage) GetSenderID() OptInt {
+	return s.SenderID
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *MentionedMessage) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// SetMessageID sets the value of MessageID.
+func (s *MentionedMessage) SetMessageID(val OptInt) {
+	s.MessageID = val
+}
+
+// SetContent sets the value of Content.
+func (s *MentionedMessage) SetContent(val OptString) {
+	s.Content = val
+}
+
+// SetRoomID sets the value of RoomID.
+func (s *MentionedMessage) SetRoomID(val OptInt) {
+	s.RoomID = val
+}
+
+// SetSenderID sets the value of SenderID.
+func (s *MentionedMessage) SetSenderID(val OptInt) {
+	s.SenderID = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *MentionedMessage) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+type MentionedMessages []MentionedMessage
+
+func (*MentionedMessages) mentionsGetRes() {}
+
+// MentionsGetInternalServerError is response for MentionsGet operation.
+type MentionsGetInternalServerError struct{}
+
+func (*MentionsGetInternalServerError) mentionsGetRes() {}
+
+// MentionsGetUnauthorized is response for MentionsGet operation.
+type MentionsGetUnauthorized struct{}
+
+func (*MentionsGetUnauthorized) mentionsGetRes() {}
+
 // Ref: #/components/schemas/Message
 type Message struct {
 	ID          int          `json:"id"`
@@ -409,8 +496,9 @@ func (s *Message) SetAttachments(val []Attachment) {
 
 // Ref: #/components/schemas/MessageInput
 type MessageInput struct {
-	RoomID int    `json:"room_id"`
-	Text   string `json:"text"`
+	RoomID           int               `json:"room_id"`
+	Text             string            `json:"text"`
+	MentionUsernames OptNilStringArray `json:"mention_usernames"`
 }
 
 // GetRoomID returns the value of RoomID.
@@ -423,6 +511,11 @@ func (s *MessageInput) GetText() string {
 	return s.Text
 }
 
+// GetMentionUsernames returns the value of MentionUsernames.
+func (s *MessageInput) GetMentionUsernames() OptNilStringArray {
+	return s.MentionUsernames
+}
+
 // SetRoomID sets the value of RoomID.
 func (s *MessageInput) SetRoomID(val int) {
 	s.RoomID = val
@@ -431,6 +524,11 @@ func (s *MessageInput) SetRoomID(val int) {
 // SetText sets the value of Text.
 func (s *MessageInput) SetText(val string) {
 	s.Text = val
+}
+
+// SetMentionUsernames sets the value of MentionUsernames.
+func (s *MessageInput) SetMentionUsernames(val OptNilStringArray) {
+	s.MentionUsernames = val
 }
 
 // NewOptBool returns new OptBool with value set to v.
@@ -863,6 +961,69 @@ func (o OptNilString) Get() (v string, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptNilString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptNilStringArray returns new OptNilStringArray with value set to v.
+func NewOptNilStringArray(v []string) OptNilStringArray {
+	return OptNilStringArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilStringArray is optional nullable []string.
+type OptNilStringArray struct {
+	Value []string
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilStringArray was set.
+func (o OptNilStringArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilStringArray) Reset() {
+	var v []string
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilStringArray) SetTo(v []string) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilStringArray) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilStringArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []string
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilStringArray) Get() (v []string, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilStringArray) Or(d []string) []string {
 	if v, ok := o.Get(); ok {
 		return v
 	}

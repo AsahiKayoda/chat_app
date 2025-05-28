@@ -50,6 +50,12 @@ type Handler interface {
 	//
 	// POST /messages/{message_id}/read
 	MarkMessageAsRead(ctx context.Context, params MarkMessageAsReadParams) (MarkMessageAsReadRes, error)
+	// MentionsGet implements GET /mentions operation.
+	//
+	// 現在ログイン中のユーザーに対する、未読のメンション通知を返します.
+	//
+	// GET /mentions
+	MentionsGet(ctx context.Context) (MentionsGetRes, error)
 	// MessagesGet implements GET /messages operation.
 	//
 	// Get messages with a user.
@@ -85,18 +91,20 @@ type Handler interface {
 // Server implements http server based on OpenAPI v3 specification and
 // calls Handler to handle requests.
 type Server struct {
-	h Handler
+	h   Handler
+	sec SecurityHandler
 	baseServer
 }
 
 // NewServer creates new Server.
-func NewServer(h Handler, opts ...ServerOption) (*Server, error) {
+func NewServer(h Handler, sec SecurityHandler, opts ...ServerOption) (*Server, error) {
 	s, err := newServerConfig(opts...).baseServer()
 	if err != nil {
 		return nil, err
 	}
 	return &Server{
 		h:          h,
+		sec:        sec,
 		baseServer: s,
 	}, nil
 }

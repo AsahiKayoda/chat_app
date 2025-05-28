@@ -64,6 +64,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /mentions:
+    get:
+      summary: メンション未読通知を取得する
+      description: 現在ログイン中のユーザーに対する、未読のメンション通知を返します
+      tags:
+        - Mentions
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: メンション一覧取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MentionedMessages'
+        '401':
+          description: 認証エラー（トークン不備など）
+        '500':
+          description: サーバー内部エラー
+
   /users:
     get:
       summary: Get all users
@@ -341,6 +361,26 @@ components:
           type: string
           description: Human-readable error message
 
+    MentionedMessage:
+      type: object
+      properties:
+        message_id:
+          type: integer
+        content:
+          type: string
+        room_id:
+          type: integer
+        sender_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    MentionedMessages:
+      type: array
+      items:
+        $ref: '#/components/schemas/MentionedMessage'
+
     MessageInput:
       type: object
       required:
@@ -351,6 +391,11 @@ components:
           type: integer
         text:
           type: string
+        mention_usernames:
+          type: array
+          items:
+            type: string
+          nullable: true        # ← NULL許容（明示的に空でもOK）
 
 
     Message:
@@ -441,5 +486,9 @@ components:
           format: date-time
           nullable: true
 
-
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
 

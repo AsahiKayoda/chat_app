@@ -76,6 +76,15 @@ func (UnimplementedHandler) MarkMessageAsRead(ctx context.Context, params MarkMe
 	return r, ht.ErrNotImplemented
 }
 
+// MentionsGet implements GET /mentions operation.
+//
+// 現在ログイン中のユーザーに対する、未読のメンション通知を返します.
+//
+// GET /mentions
+func (UnimplementedHandler) MentionsGet(ctx context.Context) (r MentionsGetRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // MessagesGet implements GET /messages operation.
 //
 // Get messages with a user.

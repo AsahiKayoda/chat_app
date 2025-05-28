@@ -4,12 +4,14 @@ import (
 	"log"
 	"net/http"
 	"os"
+//	"fmt"
 
 	gen "backend/api/gen"
 	"backend/api/impl"
 	"backend/db"
 	"backend/middleware" //JWTミドルウェア
 	"backend/websocket"//
+//	"backend/mentions"
 )
 
 // ✅ 開発用CORSミドルウェア
@@ -51,12 +53,13 @@ func main() {
 	// ✅ Handler 実装
 	handler := &impl.HandlerImpl{}
 
-	// ✅ ogen が生成した http.Handler を取得
-	server, err := gen.NewServer(handler)
+	// ✅ SecurityHandler を渡す
+	server, err := gen.NewServer(handler, &impl.Security{})
 	if err != nil {
 		log.Fatalf("❌ サーバー生成に失敗: %v", err)
 	}
 	log.Println("✅ ogen サーバー構築成功")
+
 
 	// ✅ JWT認証ミドルウェアでラップ（JWT → ogen）
 	jwtWrapped := middleware.JWTAuthMiddleware(secret)(server)
@@ -79,6 +82,12 @@ func main() {
 
 	// /（それ以外）は ogen + JWT + CORS などを通したAPI
 	mux.Handle("/", finalHandler)
+
+/*
+	text := "こんにちは @kayoda さんと @taro_123 に連絡しました"
+	usernames := mentions.ExtractMentionUsernames(text)
+	fmt.Println(usernames) // → ["kayoda", "taro_123"]
+*/
 
 	// ✅ 最終起動
 	log.Println("🚀 サーバー起動: http://localhost:8080")

@@ -143,6 +143,26 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					return
 				}
 				switch elem[0] {
+				case 'n': // Prefix: "ntions"
+
+					if l := len("ntions"); len(elem) >= l && elem[0:l] == "ntions" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch r.Method {
+						case "GET":
+							s.handleMentionsGetRequest([0]string{}, elemIsEscaped, w, r)
+						default:
+							s.notAllowed(w, r, "GET")
+						}
+
+						return
+					}
+
 				case 's': // Prefix: "ssages"
 
 					if l := len("ssages"); len(elem) >= l && elem[0:l] == "ssages" {
@@ -513,6 +533,30 @@ func (s *Server) FindPath(method string, u *url.URL) (r Route, _ bool) {
 					}
 				}
 				switch elem[0] {
+				case 'n': // Prefix: "ntions"
+
+					if l := len("ntions"); len(elem) >= l && elem[0:l] == "ntions" {
+						elem = elem[l:]
+					} else {
+						break
+					}
+
+					if len(elem) == 0 {
+						// Leaf node.
+						switch method {
+						case "GET":
+							r.name = MentionsGetOperation
+							r.summary = "メンション未読通知を取得する"
+							r.operationID = ""
+							r.pathPattern = "/mentions"
+							r.args = args
+							r.count = 0
+							return r, true
+						default:
+							return
+						}
+					}
+
 				case 's': // Prefix: "ssages"
 
 					if l := len("ssages"); len(elem) >= l && elem[0:l] == "ssages" {

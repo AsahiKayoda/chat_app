@@ -9,6 +9,10 @@ type MarkMessageAsReadRes interface {
 	markMessageAsReadRes()
 }
 
+type MentionsGetRes interface {
+	mentionsGetRes()
+}
+
 type SignupPostRes interface {
 	signupPostRes()
 }

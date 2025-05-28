@@ -32,6 +32,31 @@ func (h *HandlerImpl) MessagesPost(ctx context.Context, req *gen.MessageInput) (
 		return nil, result.Error
 	}
 
+		// --- 👇 メンション処理（オプショナル） ---
+	if req.MentionUsernames.IsSet() && len(req.MentionUsernames.Value) > 0 {
+		var users []db.UserModel
+		if err := db.DB.
+			Where("username IN ?", req.MentionUsernames.Value).
+			Find(&users).Error; err != nil {
+			return nil, err
+		}
+
+		var mentions []db.MentionModel
+		for _, u := range users {
+			mentions = append(mentions, db.MentionModel{
+				MessageID:       msg.ID,
+				MentionTargetID: u.ID,
+			})
+		}
+
+		if len(mentions) > 0 {
+			if err := db.DB.Create(&mentions).Error; err != nil {
+				return nil, err
+			}
+		}
+	}
+
+
 	// 作成したメッセージを返す
 	return &gen.Message{
 		ID:         int(msg.ID),
@@ -100,4 +125,3 @@ func (h *HandlerImpl) MessagesGet(ctx context.Context, params gen.MessagesGetPar
 
 	return resp, nil
 }
-

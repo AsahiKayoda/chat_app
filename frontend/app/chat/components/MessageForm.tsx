@@ -30,6 +30,12 @@ export default function MessageForm({ roomId, currentUserId, onMessageSent }: Pr
     setPreviewFile(file);
   };
 
+// 🔍 メンションを抽出する関数（@username を抽出して ["username", ...] に）
+  const extractMentionUsernames = (input: string): string[] => {
+    const matches = input.match(/@(\w+)/g);
+    return matches ? matches.map((m) => m.substring(1)) : [];
+  };
+
 const handleSubmit = async (e: React.FormEvent) => {
   e.preventDefault();
   setError('');
@@ -40,8 +46,10 @@ const handleSubmit = async (e: React.FormEvent) => {
 
     // ✅ 空の text のときは自動補完（画像のみ送信対策）
     const fallbackText = text.trim() || '画像を送信しました';
+    // ✅ メンションユーザー名を抽出
+    const mentionUsernames = extractMentionUsernames(fallbackText);
     // ✅ sendMessage を呼び出して messageId を取得
-    const message = await sendMessage(Number(roomId), fallbackText);
+    const message = await sendMessage(Number(roomId), fallbackText, mentionUsernames);
     console.log('✅ メッセージ送信成功: message.id =', message.id);
     // ✅ 添付ファイルがある場合にアップロード
     if (previewFile) {

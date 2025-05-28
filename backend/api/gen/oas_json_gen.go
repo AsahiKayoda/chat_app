@@ -1105,6 +1105,187 @@ func (s *MarkMessageAsReadUnauthorized) UnmarshalJSON(data []byte) error {
 }
 
 // Encode implements json.Marshaler.
+func (s *MentionedMessage) Encode(e *jx.Encoder) {
+	e.ObjStart()
+	s.encodeFields(e)
+	e.ObjEnd()
+}
+
+// encodeFields encodes fields.
+func (s *MentionedMessage) encodeFields(e *jx.Encoder) {
+	{
+		if s.MessageID.Set {
+			e.FieldStart("message_id")
+			s.MessageID.Encode(e)
+		}
+	}
+	{
+		if s.Content.Set {
+			e.FieldStart("content")
+			s.Content.Encode(e)
+		}
+	}
+	{
+		if s.RoomID.Set {
+			e.FieldStart("room_id")
+			s.RoomID.Encode(e)
+		}
+	}
+	{
+		if s.SenderID.Set {
+			e.FieldStart("sender_id")
+			s.SenderID.Encode(e)
+		}
+	}
+	{
+		if s.CreatedAt.Set {
+			e.FieldStart("created_at")
+			s.CreatedAt.Encode(e, json.EncodeDateTime)
+		}
+	}
+}
+
+var jsonFieldsNameOfMentionedMessage = [5]string{
+	0: "message_id",
+	1: "content",
+	2: "room_id",
+	3: "sender_id",
+	4: "created_at",
+}
+
+// Decode decodes MentionedMessage from json.
+func (s *MentionedMessage) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode MentionedMessage to nil")
+	}
+
+	if err := d.ObjBytes(func(d *jx.Decoder, k []byte) error {
+		switch string(k) {
+		case "message_id":
+			if err := func() error {
+				s.MessageID.Reset()
+				if err := s.MessageID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"message_id\"")
+			}
+		case "content":
+			if err := func() error {
+				s.Content.Reset()
+				if err := s.Content.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"content\"")
+			}
+		case "room_id":
+			if err := func() error {
+				s.RoomID.Reset()
+				if err := s.RoomID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"room_id\"")
+			}
+		case "sender_id":
+			if err := func() error {
+				s.SenderID.Reset()
+				if err := s.SenderID.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"sender_id\"")
+			}
+		case "created_at":
+			if err := func() error {
+				s.CreatedAt.Reset()
+				if err := s.CreatedAt.Decode(d, json.DecodeDateTime); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"created_at\"")
+			}
+		default:
+			return d.Skip()
+		}
+		return nil
+	}); err != nil {
+		return errors.Wrap(err, "decode MentionedMessage")
+	}
+
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s *MentionedMessage) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *MentionedMessage) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes MentionedMessages as json.
+func (s MentionedMessages) Encode(e *jx.Encoder) {
+	unwrapped := []MentionedMessage(s)
+
+	e.ArrStart()
+	for _, elem := range unwrapped {
+		elem.Encode(e)
+	}
+	e.ArrEnd()
+}
+
+// Decode decodes MentionedMessages from json.
+func (s *MentionedMessages) Decode(d *jx.Decoder) error {
+	if s == nil {
+		return errors.New("invalid: unable to decode MentionedMessages to nil")
+	}
+	var unwrapped []MentionedMessage
+	if err := func() error {
+		unwrapped = make([]MentionedMessage, 0)
+		if err := d.Arr(func(d *jx.Decoder) error {
+			var elem MentionedMessage
+			if err := elem.Decode(d); err != nil {
+				return err
+			}
+			unwrapped = append(unwrapped, elem)
+			return nil
+		}); err != nil {
+			return err
+		}
+		return nil
+	}(); err != nil {
+		return errors.Wrap(err, "alias")
+	}
+	*s = MentionedMessages(unwrapped)
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s MentionedMessages) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *MentionedMessages) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode implements json.Marshaler.
 func (s *Message) Encode(e *jx.Encoder) {
 	e.ObjStart()
 	s.encodeFields(e)
@@ -1330,11 +1511,18 @@ func (s *MessageInput) encodeFields(e *jx.Encoder) {
 		e.FieldStart("text")
 		e.Str(s.Text)
 	}
+	{
+		if s.MentionUsernames.Set {
+			e.FieldStart("mention_usernames")
+			s.MentionUsernames.Encode(e)
+		}
+	}
 }
 
-var jsonFieldsNameOfMessageInput = [2]string{
+var jsonFieldsNameOfMessageInput = [3]string{
 	0: "room_id",
 	1: "text",
+	2: "mention_usernames",
 }
 
 // Decode decodes MessageInput from json.
@@ -1369,6 +1557,16 @@ func (s *MessageInput) Decode(d *jx.Decoder) error {
 				return nil
 			}(); err != nil {
 				return errors.Wrap(err, "decode field \"text\"")
+			}
+		case "mention_usernames":
+			if err := func() error {
+				s.MentionUsernames.Reset()
+				if err := s.MentionUsernames.Decode(d); err != nil {
+					return err
+				}
+				return nil
+			}(); err != nil {
+				return errors.Wrap(err, "decode field \"mention_usernames\"")
 			}
 		default:
 			return d.Skip()
@@ -1731,6 +1929,69 @@ func (s OptNilString) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements stdjson.Unmarshaler.
 func (s *OptNilString) UnmarshalJSON(data []byte) error {
+	d := jx.DecodeBytes(data)
+	return s.Decode(d)
+}
+
+// Encode encodes []string as json.
+func (o OptNilStringArray) Encode(e *jx.Encoder) {
+	if !o.Set {
+		return
+	}
+	if o.Null {
+		e.Null()
+		return
+	}
+	e.ArrStart()
+	for _, elem := range o.Value {
+		e.Str(elem)
+	}
+	e.ArrEnd()
+}
+
+// Decode decodes []string from json.
+func (o *OptNilStringArray) Decode(d *jx.Decoder) error {
+	if o == nil {
+		return errors.New("invalid: unable to decode OptNilStringArray to nil")
+	}
+	if d.Next() == jx.Null {
+		if err := d.Null(); err != nil {
+			return err
+		}
+
+		var v []string
+		o.Value = v
+		o.Set = true
+		o.Null = true
+		return nil
+	}
+	o.Set = true
+	o.Null = false
+	o.Value = make([]string, 0)
+	if err := d.Arr(func(d *jx.Decoder) error {
+		var elem string
+		v, err := d.Str()
+		elem = string(v)
+		if err != nil {
+			return err
+		}
+		o.Value = append(o.Value, elem)
+		return nil
+	}); err != nil {
+		return err
+	}
+	return nil
+}
+
+// MarshalJSON implements stdjson.Marshaler.
+func (s OptNilStringArray) MarshalJSON() ([]byte, error) {
+	e := jx.Encoder{}
+	s.Encode(&e)
+	return e.Bytes(), nil
+}
+
+// UnmarshalJSON implements stdjson.Unmarshaler.
+func (s *OptNilStringArray) UnmarshalJSON(data []byte) error {
 	d := jx.DecodeBytes(data)
 	return s.Decode(d)
 }

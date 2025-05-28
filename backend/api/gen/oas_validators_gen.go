@@ -62,6 +62,44 @@ func (s *LoginRequest) Validate() error {
 	return nil
 }
 
+func (s MentionedMessages) Validate() error {
+	alias := ([]MentionedMessage)(s)
+	if alias == nil {
+		return errors.New("nil is invalid value")
+	}
+	return nil
+}
+
+func (s *MessageInput) Validate() error {
+	if s == nil {
+		return validate.ErrNilPointer
+	}
+
+	var failures []validate.FieldError
+	if err := func() error {
+		if value, ok := s.MentionUsernames.Get(); ok {
+			if err := func() error {
+				if value == nil {
+					return errors.New("nil is invalid value")
+				}
+				return nil
+			}(); err != nil {
+				return err
+			}
+		}
+		return nil
+	}(); err != nil {
+		failures = append(failures, validate.FieldError{
+			Name:  "mention_usernames",
+			Error: err,
+		})
+	}
+	if len(failures) > 0 {
+		return &validate.Error{Fields: failures}
+	}
+	return nil
+}
+
 func (s *SignupResponse) Validate() error {
 	if s == nil {
 		return validate.ErrNilPointer

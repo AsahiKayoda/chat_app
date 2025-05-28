@@ -30,3 +30,11 @@ export type ChatRoom = {
   isGroup: boolean
   createdAt: string
 }
+
+export type Mention = {
+  message_id: number
+  content: string
+  room_id: number
+  sender_id: number
+  created_at: string // ← Date に変換する場合は型に応じて変更
+}
