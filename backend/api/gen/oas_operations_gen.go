@@ -8,6 +8,7 @@ type OperationName = string
 const (
 	ChatRoomsPostOperation           OperationName = "ChatRoomsPost"
 	CreateGroupChatRoomOperation     OperationName = "CreateGroupChatRoom"
+	DeleteMessageOperation           OperationName = "DeleteMessage"
 	GetChatRoomsOperation            OperationName = "GetChatRooms"
 	GetMeOperation                   OperationName = "GetMe"
 	GetUnreadMessagesOperation       OperationName = "GetUnreadMessages"

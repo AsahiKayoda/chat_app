@@ -71,7 +71,7 @@ paths:
       tags:
         - Mentions
       security:
-        - bearerAuth: []
+        - BearerAuth: []
       responses:
         '200':
           description: メンション一覧取得成功
@@ -137,6 +137,29 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Message'
+
+  /messages/{id}:
+    delete:
+      summary: Delete a specific message
+      operationId: deleteMessage
+      tags:
+        - messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer  # UUID型なら string に変更
+          description: ID of the message to delete
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Successfully deleted
+        '403':
+          description: Forbidden – Not your message
+        '404':
+          description: Message not found
 
   /messages/{message_id}/read:
     post:
@@ -487,8 +510,7 @@ components:
           nullable: true
 
   securitySchemes:
-    bearerAuth:
+    BearerAuth:
       type: http
       scheme: bearer
       bearerFormat: JWT
-

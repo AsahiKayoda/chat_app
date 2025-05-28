@@ -41,6 +41,9 @@ export default function ChatLayout() {
   const [mentions, setMentions] = useState<Mention[]>([]);
   const [unreadRoomIds, setUnreadRoomIds] = useState<Set<number>>(new Set());
   const [messages, setMessages] = useState<Message[]>([]);
+  const handleDeleteMessage = (id: number) => {
+  setMessages(prev => prev.filter(msg => msg.id !== id));
+};
   const router = useRouter();
 
   const handleLogout = () => {
@@ -130,6 +133,7 @@ export default function ChatLayout() {
 
             <MessageList
               messages={messages.filter((msg) => msg.room_id === roomId)}
+              onDeleteMessage={handleDeleteMessage}
               selectedUser={selectedUser}
               selectedGroup={selectedGroup}
               currentUserId={currentUserId ?? -1}

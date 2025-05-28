@@ -208,6 +208,21 @@ func (s *CreateGroupChatInput) SetMemberIds(val []int) {
 	s.MemberIds = val
 }
 
+// DeleteMessageForbidden is response for DeleteMessage operation.
+type DeleteMessageForbidden struct{}
+
+func (*DeleteMessageForbidden) deleteMessageRes() {}
+
+// DeleteMessageNoContent is response for DeleteMessage operation.
+type DeleteMessageNoContent struct{}
+
+func (*DeleteMessageNoContent) deleteMessageRes() {}
+
+// DeleteMessageNotFound is response for DeleteMessage operation.
+type DeleteMessageNotFound struct{}
+
+func (*DeleteMessageNotFound) deleteMessageRes() {}
+
 // Ref: #/components/schemas/Error
 type Error struct {
 	// HTTP status code.

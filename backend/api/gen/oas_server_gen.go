@@ -20,6 +20,12 @@ type Handler interface {
 	//
 	// POST /chat-rooms/groups
 	CreateGroupChatRoom(ctx context.Context, req *CreateGroupChatInput) (*ChatRoom, error)
+	// DeleteMessage implements deleteMessage operation.
+	//
+	// Delete a specific message.
+	//
+	// DELETE /messages/{id}
+	DeleteMessage(ctx context.Context, params DeleteMessageParams) (DeleteMessageRes, error)
 	// GetChatRooms implements GetChatRooms operation.
 	//
 	// Get all chat rooms the user belongs to.

@@ -31,6 +31,15 @@ func (UnimplementedHandler) CreateGroupChatRoom(ctx context.Context, req *Create
 	return r, ht.ErrNotImplemented
 }
 
+// DeleteMessage implements deleteMessage operation.
+//
+// Delete a specific message.
+//
+// DELETE /messages/{id}
+func (UnimplementedHandler) DeleteMessage(ctx context.Context, params DeleteMessageParams) (r DeleteMessageRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetChatRooms implements GetChatRooms operation.
 //
 // Get all chat rooms the user belongs to.

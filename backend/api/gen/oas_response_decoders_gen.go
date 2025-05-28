@@ -96,6 +96,21 @@ func decodeCreateGroupChatRoomResponse(resp *http.Response) (res *ChatRoom, _ er
 	return res, validate.UnexpectedStatusCode(resp.StatusCode)
 }
 
+func decodeDeleteMessageResponse(resp *http.Response) (res DeleteMessageRes, _ error) {
+	switch resp.StatusCode {
+	case 204:
+		// Code 204.
+		return &DeleteMessageNoContent{}, nil
+	case 403:
+		// Code 403.
+		return &DeleteMessageForbidden{}, nil
+	case 404:
+		// Code 404.
+		return &DeleteMessageNotFound{}, nil
+	}
+	return res, validate.UnexpectedStatusCode(resp.StatusCode)
+}
+
 func decodeGetChatRoomsResponse(resp *http.Response) (res []ChatRoom, _ error) {
 	switch resp.StatusCode {
 	case 200:

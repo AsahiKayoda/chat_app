@@ -101,5 +101,16 @@ export async function getMentions() {
   const res = await api.get('/mentions');
   return res.data; // ← MentionedMessage[] が返る想定
 }
-
+/**
+ * メッセージ削除API
+ * @param id メッセージID
+ */
+export const deleteMessage = async (id: number): Promise<void> => {
+  try {
+    await api.delete(`/messages/${id}`);
+  } catch (err) {
+    console.error('メッセージ削除失敗:', err);
+    throw err;
+  }
+};
 

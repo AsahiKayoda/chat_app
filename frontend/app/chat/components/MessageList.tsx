@@ -1,9 +1,10 @@
 'use client';
 
 import { useEffect, useRef } from 'react';
-import { markMessageAsRead } from '../services/chatService';
+import { markMessageAsRead, deleteMessage } from '../services/chatService';
 import styles from '../chat.module.css';
 import { Message, User, ChatRoom } from '../types/chat';
+
 
 type Props = {
   selectedUser: User | null;
@@ -14,6 +15,7 @@ type Props = {
   roomId: number;
   sendReadNotification: (roomId: number, messageIds: number[]) => void;
   setUnreadRoomIds: React.Dispatch<React.SetStateAction<Set<number>>>;
+  onDeleteMessage: (id: number) => void; // 🔧 追加
 };
 
 export default function MessageList({
@@ -25,6 +27,7 @@ export default function MessageList({
   roomId,
   sendReadNotification,
   setUnreadRoomIds,
+  onDeleteMessage, // 🔧 追加
 }: Props) {
   if (!selectedUser && !selectedGroup) return null;
 
@@ -42,7 +45,7 @@ export default function MessageList({
 
     unreadMessages.forEach((msg) => {
       alreadyRead.current.add(msg.id);
-      markMessageAsRead(msg.id); // ✅ DBにも反映
+      markMessageAsRead(msg.id);
     });
 
     const ids = unreadMessages.map((msg) => msg.id);
@@ -54,6 +57,19 @@ export default function MessageList({
       return newSet;
     });
   }, [messages, currentUserId, roomId, sendReadNotification, setUnreadRoomIds]);
+
+  const handleDelete = async (id: number) => {
+    const confirmed = confirm('このメッセージを削除しますか？');
+    if (!confirmed) return;
+
+    try {
+      await deleteMessage(id);
+      onDeleteMessage(id); // 🧹 状態反映
+    } catch (err) {
+      console.error(err);
+      alert('削除に失敗しました');
+    }
+  };
 
   return (
     <div className={styles.messages}>
@@ -70,7 +86,6 @@ export default function MessageList({
             {!isMine && <div className={styles.senderName}>{senderName}</div>}
             <div>{msg.text}</div>
 
-            {/* ✅ 添付画像の表示 */}
             {msg.attachments &&
               msg.attachments.map((att) => (
                 <div key={att.id} className={styles.attachment}>
@@ -85,8 +100,16 @@ export default function MessageList({
             {isMine && msg.is_read && (
               <div className={styles.readStatus}>既読</div>
             )}
+
+            {/* 🔘 削除ボタン */}
+            {isMine && (
+              <div className={styles.actions}>
+                <button onClick={() => handleDelete(msg.id)}className={styles.deleteButton}>削除</button>
+              </div>
+            )}
           </div>
         );
       })}
     </div>
-  );}
+  );
+}

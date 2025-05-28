@@ -36,3 +36,16 @@ api.interceptors.response.use(
 );
 
 export default api;
+
+/**
+ * メッセージ削除API
+ * @param id メッセージID
+ */
+export const deleteMessage = async (id: number): Promise<void> => {
+  try {
+    await api.delete(`/messages/${id}`);
+  } catch (err) {
+    console.error('メッセージ削除失敗:', err);
+    throw err;
+  }
+};
