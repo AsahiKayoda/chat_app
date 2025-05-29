@@ -1,10 +1,10 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { markMessageAsRead, deleteMessage } from '../services/chatService';
+import { useEffect, useRef, useState } from 'react';
+import { markMessageAsRead } from '../services/chatService';
+import { getHiddenMessageIds, addHiddenMessageId } from '@/lib/hiddenMessages';
 import styles from '../chat.module.css';
 import { Message, User, ChatRoom } from '../types/chat';
-
 
 type Props = {
   selectedUser: User | null;
@@ -15,7 +15,7 @@ type Props = {
   roomId: number;
   sendReadNotification: (roomId: number, messageIds: number[]) => void;
   setUnreadRoomIds: React.Dispatch<React.SetStateAction<Set<number>>>;
-  onDeleteMessage: (id: number) => void; // 🔧 追加
+  onDeleteMessage: (id: number) => void;
 };
 
 export default function MessageList({
@@ -27,11 +27,27 @@ export default function MessageList({
   roomId,
   sendReadNotification,
   setUnreadRoomIds,
-  onDeleteMessage, // 🔧 追加
+  onDeleteMessage,
 }: Props) {
   if (!selectedUser && !selectedGroup) return null;
 
   const alreadyRead = useRef(new Set<number>());
+  const [hiddenIds, setHiddenIds] = useState<number[]>([]);
+  const [isReady, setIsReady] = useState<boolean>(false);
+
+  useEffect(() => {
+    const loadHidden = () => {
+      try {
+        const hidden = getHiddenMessageIds(currentUserId);
+        setHiddenIds(hidden);
+      } catch (e) {
+        console.error('Failed to load hidden messages:', e);
+      } finally {
+        setIsReady(true);
+      }
+    };
+    loadHidden();
+  }, [currentUserId]);
 
   useEffect(() => {
     const unreadMessages = messages.filter(
@@ -58,22 +74,40 @@ export default function MessageList({
     });
   }, [messages, currentUserId, roomId, sendReadNotification, setUnreadRoomIds]);
 
+  const handleHide = (id: number) => {
+    try {
+      addHiddenMessageId(currentUserId, id);
+      setHiddenIds(prev => [...prev, id]);
+      onDeleteMessage(id);
+    } catch (err) {
+      console.error(err);
+      alert('非表示に失敗しました');
+    }
+  };
+
   const handleDelete = async (id: number) => {
     const confirmed = confirm('このメッセージを削除しますか？');
     if (!confirmed) return;
 
     try {
-      await deleteMessage(id);
-      onDeleteMessage(id); // 🧹 状態反映
+      const res = await fetch(`/api/messages/${id}`, {
+        method: 'DELETE',
+      });
+      if (!res.ok) throw new Error('削除失敗');
+      onDeleteMessage(id);
     } catch (err) {
       console.error(err);
       alert('削除に失敗しました');
     }
   };
 
+  if (!isReady) return null;
+
+  const visibleMessages = messages.filter(msg => !hiddenIds.includes(msg.id));
+
   return (
     <div className={styles.messages}>
-      {messages.map((msg) => {
+      {visibleMessages.map((msg) => {
         const isMine = msg.sender_id === currentUserId;
         const sender = users.find((u) => u.id === msg.sender_id);
         const senderName = sender ? sender.name : '不明なユーザー';
@@ -105,6 +139,7 @@ export default function MessageList({
             {isMine && (
               <div className={styles.actions}>
                 <button onClick={() => handleDelete(msg.id)}className={styles.deleteButton}>削除</button>
+                <button onClick={() => handleHide(msg.id)}className={styles.deleteButton}>非表示</button>
               </div>
             )}
           </div>

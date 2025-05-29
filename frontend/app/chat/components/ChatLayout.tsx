@@ -143,10 +143,19 @@ export default function ChatLayout() {
               setUnreadRoomIds={setUnreadRoomIds}
             />
 
-           <MessageForm
+            <MessageForm
               roomId={roomId}
               currentUserId={currentUserId}
-              onMessageSent={() => fetchMessages(roomId)}
+              onMessageSent={() => {
+                fetchMessages(roomId)
+                  .then((newMessages) => {
+                    setMessages((prev) => {
+                      const others = prev.filter((msg) => msg.room_id !== roomId);
+                      return [...others, ...newMessages];
+                    });
+                  })
+                  .catch((err) => console.error("❌ 送信後メッセージ再取得失敗:", err));
+              }}
             />
           </>
         )}
