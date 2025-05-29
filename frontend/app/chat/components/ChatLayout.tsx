@@ -55,8 +55,8 @@ export default function ChatLayout() {
   useEffect(() => {
     if (!currentUserId) return;
     getMentions()
-    .then((data) => setMentions(data))
-    .catch((err) => console.error('🔴 mentions取得失敗', err));
+      .then((data) => setMentions(data))
+      .catch((err) => console.error('🔴 mentions取得失敗', err));
     fetchUnreadMessages()
       .then((msgs) => {
         const roomIds = new Set(msgs.map((m) => m.room_id));

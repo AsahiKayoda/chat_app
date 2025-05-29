@@ -286,7 +286,7 @@
   object-fit: contain;    /* ✅ 中央寄せ縮小表示 */
 }
 
-/* 削除ボタンのカスタム位置・デザイン */
+/* 削除ボタン、非表示ボタンのカスタム位置・デザイン */
 .deleteButton {
   background-color: transparent;
   color: #666;
@@ -295,4 +295,8 @@
   border-radius: 4px;
   font-size: 0.8rem;
   cursor: pointer;
+}
+
+.actions button + button {
+  margin-left: 4px;
 }

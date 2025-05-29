@@ -1,13 +1,16 @@
-'use client'
+'use client';
 
-import { useState } from 'react';
 import styles from '../chat.module.css';
 import { sendMessage, uploadAttachment } from '../services/chatService';
+import { useState } from 'react';
+// @ts-ignore
+import Picker from '@emoji-mart/react';
+import data from '@emoji-mart/data';
 
 type Props = {
   roomId: number;
   currentUserId: number;
-  onMessageSent: () => void; // メッセージ取得トリガーなど
+  onMessageSent: () => void;
 };
 
 export default function MessageForm({ roomId, currentUserId, onMessageSent }: Props) {
@@ -15,6 +18,7 @@ export default function MessageForm({ roomId, currentUserId, onMessageSent }: Pr
   const [error, setError] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [previewFile, setPreviewFile] = useState<File | null>(null);
+  const [showPicker, setShowPicker] = useState(false);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -30,36 +34,32 @@ export default function MessageForm({ roomId, currentUserId, onMessageSent }: Pr
     setPreviewFile(file);
   };
 
-// 🔍 メンションを抽出する関数（@username を抽出して ["username", ...] に）
   const extractMentionUsernames = (input: string): string[] => {
     const matches = input.match(/@(\w+)/g);
     return matches ? matches.map((m) => m.substring(1)) : [];
   };
 
-const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError('');
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
 
-  if (!text.trim() && !previewFile) return;
+    if (!text.trim() && !previewFile) return;
 
-  try {
+    try {
+      const fallbackText = text.trim() || '画像を送信しました';
+      const mentionUsernames = extractMentionUsernames(fallbackText);
+      const message = await sendMessage(Number(roomId), fallbackText, mentionUsernames);
+      console.log('✅ メッセージ送信成功: message.id =', message.id);
 
-    // ✅ 空の text のときは自動補完（画像のみ送信対策）
-    const fallbackText = text.trim() || '画像を送信しました';
-    // ✅ メンションユーザー名を抽出
-    const mentionUsernames = extractMentionUsernames(fallbackText);
-    // ✅ sendMessage を呼び出して messageId を取得
-    const message = await sendMessage(Number(roomId), fallbackText, mentionUsernames);
-    console.log('✅ メッセージ送信成功: message.id =', message.id);
-    // ✅ 添付ファイルがある場合にアップロード
-    if (previewFile) {
-      await uploadAttachment(message.id, previewFile); // ← sendMessage が返す message.id を使う
-      setPreviewFile(null);
-      setPreviewUrl(null);
-    }
+      if (previewFile) {
+        await uploadAttachment(message.id, previewFile);
+        setPreviewFile(null);
+        setPreviewUrl(null);
+      }
 
       setText('');
-      onMessageSent(); // メッセージ再取得トリガー
+      setShowPicker(false);
+      onMessageSent();
     } catch (err) {
       console.error(err);
       setError('送信に失敗しました');
@@ -79,6 +79,11 @@ const handleSubmit = async (e: React.FormEvent) => {
         />
       </label>
 
+      {/* 😊 emoji picker toggle */}
+      <button type="button" className={styles.fileButton} onClick={() => setShowPicker((prev) => !prev)}>
+        😊
+      </button>
+
       {/* テキスト入力 */}
       <input
         type="text"
@@ -87,6 +92,20 @@ const handleSubmit = async (e: React.FormEvent) => {
         onChange={(e) => setText(e.target.value)}
         className={styles.messageInput}
       />
+
+      {/* Emoji Picker 本体 */}
+      {showPicker && (
+        <div style={{ position: 'absolute', bottom: '60px', zIndex: 10 }}>
+          <Picker
+            data={data}
+            onEmojiSelect={(emoji: any) => {
+              setText((prev) => prev + emoji.native);
+              setShowPicker(false);
+            }}
+            theme="light"
+          />
+        </div>
+      )}
 
       {/* プレビュー画像 */}
       {previewUrl && (

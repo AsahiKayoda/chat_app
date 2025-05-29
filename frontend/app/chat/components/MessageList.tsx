@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { markMessageAsRead } from '../services/chatService';
+import { markMessageAsRead, deleteMessage } from '../services/chatService';
 import { getHiddenMessageIds, addHiddenMessageId } from '@/lib/hiddenMessages';
 import styles from '../chat.module.css';
 import { Message, User, ChatRoom } from '../types/chat';
@@ -88,15 +88,11 @@ export default function MessageList({
   const handleDelete = async (id: number) => {
     const confirmed = confirm('このメッセージを削除しますか？');
     if (!confirmed) return;
-
     try {
-      const res = await fetch(`/api/messages/${id}`, {
-        method: 'DELETE',
-      });
-      if (!res.ok) throw new Error('削除失敗');
+      await deleteMessage(id); // ← fetch の代わりにこれを呼ぶ！
       onDeleteMessage(id);
     } catch (err) {
-      console.error(err);
+      console.error('削除に失敗しました:', err);
       alert('削除に失敗しました');
     }
   };

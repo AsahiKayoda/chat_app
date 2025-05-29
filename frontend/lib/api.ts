@@ -14,6 +14,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = getToken();
+    console.log('🟢 Interceptor内のトークン:', token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -36,16 +37,3 @@ api.interceptors.response.use(
 );
 
 export default api;
-
-/**
- * メッセージ削除API
- * @param id メッセージID
- */
-export const deleteMessage = async (id: number): Promise<void> => {
-  try {
-    await api.delete(`/messages/${id}`);
-  } catch (err) {
-    console.error('メッセージ削除失敗:', err);
-    throw err;
-  }
-};

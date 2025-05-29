@@ -8,6 +8,7 @@ export function saveToken(token: string) {
 // lib/auth.ts
 export function getToken(): string | null {
   return typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+
 }
 
 export function removeToken() {

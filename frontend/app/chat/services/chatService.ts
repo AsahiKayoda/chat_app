@@ -106,6 +106,7 @@ export async function getMentions() {
  * @param id メッセージID
  */
 export const deleteMessage = async (id: number): Promise<void> => {
+  //console.log('📡 DELETE リクエストを送信:', `/messages/${id}`);
   try {
     await api.delete(`/messages/${id}`);
   } catch (err) {
