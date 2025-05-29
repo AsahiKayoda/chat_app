@@ -12,9 +12,26 @@ export async function fetchMessages(roomId: number): Promise<Message[]> {
   return res.data;
 }
 
-export async function sendMessage(roomId: number, text: string): Promise<void> {
-  await api.post('/messages', { room_id: roomId, text });
+export async function sendMessage(
+  roomId: number,
+  text: string,
+  mentionUsernames?: string[]
+): Promise<{ id: number }> {
+  const payload: any = {
+    room_id: roomId,
+    text,
+  };
+
+  if (mentionUsernames?.length) {
+    payload.mention_usernames = mentionUsernames;
+  }
+
+  const res = await api.post('/messages', payload);
+  console.log('✅ sendMessage のレスポンス:', res.data);
+  return res.data;
 }
+
+
 
 export async function fetchUsers(): Promise<User[]> {
   const res = await api.get('/users');
@@ -66,4 +83,35 @@ export async function fetchUnreadMessages(): Promise<Message[]> {
   return res.data;
 } 
 
+
+export const uploadAttachment = async (messageId: number, file: File) => {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const res = await api.post(`/messages/${messageId}/attachments`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data', // ✅ フォーム形式を明示
+    },
+  });
+
+  return res.data;
+};
+
+export async function getMentions() {
+  const res = await api.get('/mentions');
+  return res.data; // ← MentionedMessage[] が返る想定
+}
+/**
+ * メッセージ削除API
+ * @param id メッセージID
+ */
+export const deleteMessage = async (id: number): Promise<void> => {
+  //console.log('📡 DELETE リクエストを送信:', `/messages/${id}`);
+  try {
+    await api.delete(`/messages/${id}`);
+  } catch (err) {
+    console.error('メッセージ削除失敗:', err);
+    throw err;
+  }
+};
 

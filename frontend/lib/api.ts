@@ -14,6 +14,7 @@ const api = axios.create({
 api.interceptors.request.use((config) => {
   if (typeof window !== 'undefined') {
     const token = getToken();
+    console.log('🟢 Interceptor内のトークン:', token);
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

@@ -6,7 +6,7 @@ WORKDIR /app
 
 # 依存関係のインストール
 COPY package*.json ./
-RUN npm install
+RUN npm install --legacy-peer-deps
 
 # その他全ファイルをコピー
 COPY . .

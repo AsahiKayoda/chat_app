@@ -64,6 +64,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
+  /mentions:
+    get:
+      summary: メンション未読通知を取得する
+      description: 現在ログイン中のユーザーに対する、未読のメンション通知を返します
+      tags:
+        - Mentions
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: メンション一覧取得成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MentionedMessages'
+        '401':
+          description: 認証エラー（トークン不備など）
+        '500':
+          description: サーバー内部エラー
+
   /users:
     get:
       summary: Get all users
@@ -118,6 +138,29 @@ paths:
                 items:
                   $ref: '#/components/schemas/Message'
 
+  /messages/{id}:
+    delete:
+      summary: Delete a specific message
+      operationId: deleteMessage
+      tags:
+        - messages
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer  # UUID型なら string に変更
+          description: ID of the message to delete
+      security:
+        - BearerAuth: []
+      responses:
+        '204':
+          description: Successfully deleted
+        '403':
+          description: Forbidden – Not your message
+        '404':
+          description: Message not found
+
   /messages/{message_id}/read:
     post:
       summary: メッセージを既読として登録
@@ -157,6 +200,39 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Message'
+
+
+  /messages/{message_id}/attachments:
+    post:
+      summary: メッセージに画像を添付する
+      operationId: uploadMessageAttachment
+      parameters:
+        - name: message_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: 添付ファイルのアップロード成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Attachment'
+        '400':
+          description: リクエスト不正
+        '404':
+          description: メッセージが見つからない
 
 
 
@@ -308,6 +384,26 @@ components:
           type: string
           description: Human-readable error message
 
+    MentionedMessage:
+      type: object
+      properties:
+        message_id:
+          type: integer
+        content:
+          type: string
+        room_id:
+          type: integer
+        sender_id:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    MentionedMessages:
+      type: array
+      items:
+        $ref: '#/components/schemas/MentionedMessage'
+
     MessageInput:
       type: object
       required:
@@ -318,6 +414,11 @@ components:
           type: integer
         text:
           type: string
+        mention_usernames:
+          type: array
+          items:
+            type: string
+          nullable: true        # ← NULL許容（明示的に空でもOK）
 
 
     Message:
@@ -342,6 +443,25 @@ components:
           format: date-time
         is_read:             
           type: boolean          
+        attachments:         
+          type: array
+          items:
+            $ref: '#/components/schemas/Attachment'
+
+    Attachment:
+      type: object
+      properties:
+        id:
+          type: integer
+        message_id:
+          type: integer
+        file_name:
+          type: string
+        url:
+          type: string
+        created_at:
+          type: string
+          format: date-time
 
     ErrorResponse:
       type: object
@@ -389,5 +509,8 @@ components:
           format: date-time
           nullable: true
 
-
-
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT

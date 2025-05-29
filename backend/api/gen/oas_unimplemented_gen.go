@@ -31,6 +31,15 @@ func (UnimplementedHandler) CreateGroupChatRoom(ctx context.Context, req *Create
 	return r, ht.ErrNotImplemented
 }
 
+// DeleteMessage implements deleteMessage operation.
+//
+// Delete a specific message.
+//
+// DELETE /messages/{id}
+func (UnimplementedHandler) DeleteMessage(ctx context.Context, params DeleteMessageParams) (r DeleteMessageRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // GetChatRooms implements GetChatRooms operation.
 //
 // Get all chat rooms the user belongs to.
@@ -76,6 +85,15 @@ func (UnimplementedHandler) MarkMessageAsRead(ctx context.Context, params MarkMe
 	return r, ht.ErrNotImplemented
 }
 
+// MentionsGet implements GET /mentions operation.
+//
+// 現在ログイン中のユーザーに対する、未読のメンション通知を返します.
+//
+// GET /mentions
+func (UnimplementedHandler) MentionsGet(ctx context.Context) (r MentionsGetRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
 // MessagesGet implements GET /messages operation.
 //
 // Get messages with a user.
@@ -100,6 +118,15 @@ func (UnimplementedHandler) MessagesPost(ctx context.Context, req *MessageInput)
 //
 // POST /signup
 func (UnimplementedHandler) SignupPost(ctx context.Context, req *UserInput) (r SignupPostRes, _ error) {
+	return r, ht.ErrNotImplemented
+}
+
+// UploadMessageAttachment implements uploadMessageAttachment operation.
+//
+// メッセージに画像を添付する.
+//
+// POST /messages/{message_id}/attachments
+func (UnimplementedHandler) UploadMessageAttachment(ctx context.Context, req *UploadMessageAttachmentReq, params UploadMessageAttachmentParams) (r UploadMessageAttachmentRes, _ error) {
 	return r, ht.ErrNotImplemented
 }
 

@@ -41,6 +41,7 @@ export function useChatSocket(
             room_id: parsedRoomId,
             timestamp: parsed.timestamp,
             is_read: false,
+            attachments: [],
           };
 
           setMessages((prev) => [...prev, newMessage]);
@@ -102,7 +103,7 @@ export function useChatSocket(
         message_ids: messageIds,
       };
       socketRef.current.send(JSON.stringify(payload));
-      console.log('📤 WebSocket: read通知を送信しました', payload);
+      //console.log('📤 WebSocket: read通知を送信しました', payload);
     }
   };
 

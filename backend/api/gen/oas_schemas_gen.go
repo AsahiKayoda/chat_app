@@ -4,7 +4,84 @@ package api
 
 import (
 	"time"
+
+	ht "github.com/ogen-go/ogen/http"
 )
+
+// Ref: #/components/schemas/Attachment
+type Attachment struct {
+	ID        OptInt      `json:"id"`
+	MessageID OptInt      `json:"message_id"`
+	FileName  OptString   `json:"file_name"`
+	URL       OptString   `json:"url"`
+	CreatedAt OptDateTime `json:"created_at"`
+}
+
+// GetID returns the value of ID.
+func (s *Attachment) GetID() OptInt {
+	return s.ID
+}
+
+// GetMessageID returns the value of MessageID.
+func (s *Attachment) GetMessageID() OptInt {
+	return s.MessageID
+}
+
+// GetFileName returns the value of FileName.
+func (s *Attachment) GetFileName() OptString {
+	return s.FileName
+}
+
+// GetURL returns the value of URL.
+func (s *Attachment) GetURL() OptString {
+	return s.URL
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *Attachment) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// SetID sets the value of ID.
+func (s *Attachment) SetID(val OptInt) {
+	s.ID = val
+}
+
+// SetMessageID sets the value of MessageID.
+func (s *Attachment) SetMessageID(val OptInt) {
+	s.MessageID = val
+}
+
+// SetFileName sets the value of FileName.
+func (s *Attachment) SetFileName(val OptString) {
+	s.FileName = val
+}
+
+// SetURL sets the value of URL.
+func (s *Attachment) SetURL(val OptString) {
+	s.URL = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *Attachment) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+func (*Attachment) uploadMessageAttachmentRes() {}
+
+type BearerAuth struct {
+	Token string
+}
+
+// GetToken returns the value of Token.
+func (s *BearerAuth) GetToken() string {
+	return s.Token
+}
+
+// SetToken sets the value of Token.
+func (s *BearerAuth) SetToken(val string) {
+	s.Token = val
+}
 
 // Ref: #/components/schemas/ChatRoom
 type ChatRoom struct {
@@ -130,6 +207,21 @@ func (s *CreateGroupChatInput) SetRoomName(val string) {
 func (s *CreateGroupChatInput) SetMemberIds(val []int) {
 	s.MemberIds = val
 }
+
+// DeleteMessageForbidden is response for DeleteMessage operation.
+type DeleteMessageForbidden struct{}
+
+func (*DeleteMessageForbidden) deleteMessageRes() {}
+
+// DeleteMessageNoContent is response for DeleteMessage operation.
+type DeleteMessageNoContent struct{}
+
+func (*DeleteMessageNoContent) deleteMessageRes() {}
+
+// DeleteMessageNotFound is response for DeleteMessage operation.
+type DeleteMessageNotFound struct{}
+
+func (*DeleteMessageNotFound) deleteMessageRes() {}
 
 // Ref: #/components/schemas/Error
 type Error struct {
@@ -263,14 +355,88 @@ type MarkMessageAsReadUnauthorized ErrorResponse
 
 func (*MarkMessageAsReadUnauthorized) markMessageAsReadRes() {}
 
+// Ref: #/components/schemas/MentionedMessage
+type MentionedMessage struct {
+	MessageID OptInt      `json:"message_id"`
+	Content   OptString   `json:"content"`
+	RoomID    OptInt      `json:"room_id"`
+	SenderID  OptInt      `json:"sender_id"`
+	CreatedAt OptDateTime `json:"created_at"`
+}
+
+// GetMessageID returns the value of MessageID.
+func (s *MentionedMessage) GetMessageID() OptInt {
+	return s.MessageID
+}
+
+// GetContent returns the value of Content.
+func (s *MentionedMessage) GetContent() OptString {
+	return s.Content
+}
+
+// GetRoomID returns the value of RoomID.
+func (s *MentionedMessage) GetRoomID() OptInt {
+	return s.RoomID
+}
+
+// GetSenderID returns the value of SenderID.
+func (s *MentionedMessage) GetSenderID() OptInt {
+	return s.SenderID
+}
+
+// GetCreatedAt returns the value of CreatedAt.
+func (s *MentionedMessage) GetCreatedAt() OptDateTime {
+	return s.CreatedAt
+}
+
+// SetMessageID sets the value of MessageID.
+func (s *MentionedMessage) SetMessageID(val OptInt) {
+	s.MessageID = val
+}
+
+// SetContent sets the value of Content.
+func (s *MentionedMessage) SetContent(val OptString) {
+	s.Content = val
+}
+
+// SetRoomID sets the value of RoomID.
+func (s *MentionedMessage) SetRoomID(val OptInt) {
+	s.RoomID = val
+}
+
+// SetSenderID sets the value of SenderID.
+func (s *MentionedMessage) SetSenderID(val OptInt) {
+	s.SenderID = val
+}
+
+// SetCreatedAt sets the value of CreatedAt.
+func (s *MentionedMessage) SetCreatedAt(val OptDateTime) {
+	s.CreatedAt = val
+}
+
+type MentionedMessages []MentionedMessage
+
+func (*MentionedMessages) mentionsGetRes() {}
+
+// MentionsGetInternalServerError is response for MentionsGet operation.
+type MentionsGetInternalServerError struct{}
+
+func (*MentionsGetInternalServerError) mentionsGetRes() {}
+
+// MentionsGetUnauthorized is response for MentionsGet operation.
+type MentionsGetUnauthorized struct{}
+
+func (*MentionsGetUnauthorized) mentionsGetRes() {}
+
 // Ref: #/components/schemas/Message
 type Message struct {
-	ID        int       `json:"id"`
-	SenderID  int       `json:"sender_id"`
-	RoomID    int       `json:"room_id"`
-	Text      string    `json:"text"`
-	Timestamp time.Time `json:"timestamp"`
-	IsRead    OptBool   `json:"is_read"`
+	ID          int          `json:"id"`
+	SenderID    int          `json:"sender_id"`
+	RoomID      int          `json:"room_id"`
+	Text        string       `json:"text"`
+	Timestamp   time.Time    `json:"timestamp"`
+	IsRead      OptBool      `json:"is_read"`
+	Attachments []Attachment `json:"attachments"`
 }
 
 // GetID returns the value of ID.
@@ -303,6 +469,11 @@ func (s *Message) GetIsRead() OptBool {
 	return s.IsRead
 }
 
+// GetAttachments returns the value of Attachments.
+func (s *Message) GetAttachments() []Attachment {
+	return s.Attachments
+}
+
 // SetID sets the value of ID.
 func (s *Message) SetID(val int) {
 	s.ID = val
@@ -333,10 +504,16 @@ func (s *Message) SetIsRead(val OptBool) {
 	s.IsRead = val
 }
 
+// SetAttachments sets the value of Attachments.
+func (s *Message) SetAttachments(val []Attachment) {
+	s.Attachments = val
+}
+
 // Ref: #/components/schemas/MessageInput
 type MessageInput struct {
-	RoomID int    `json:"room_id"`
-	Text   string `json:"text"`
+	RoomID           int               `json:"room_id"`
+	Text             string            `json:"text"`
+	MentionUsernames OptNilStringArray `json:"mention_usernames"`
 }
 
 // GetRoomID returns the value of RoomID.
@@ -349,6 +526,11 @@ func (s *MessageInput) GetText() string {
 	return s.Text
 }
 
+// GetMentionUsernames returns the value of MentionUsernames.
+func (s *MessageInput) GetMentionUsernames() OptNilStringArray {
+	return s.MentionUsernames
+}
+
 // SetRoomID sets the value of RoomID.
 func (s *MessageInput) SetRoomID(val int) {
 	s.RoomID = val
@@ -357,6 +539,11 @@ func (s *MessageInput) SetRoomID(val int) {
 // SetText sets the value of Text.
 func (s *MessageInput) SetText(val string) {
 	s.Text = val
+}
+
+// SetMentionUsernames sets the value of MentionUsernames.
+func (s *MessageInput) SetMentionUsernames(val OptNilStringArray) {
+	s.MentionUsernames = val
 }
 
 // NewOptBool returns new OptBool with value set to v.
@@ -399,6 +586,144 @@ func (o OptBool) Get() (v bool, ok bool) {
 
 // Or returns value if set, or given parameter if does not.
 func (o OptBool) Or(d bool) bool {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptDateTime returns new OptDateTime with value set to v.
+func NewOptDateTime(v time.Time) OptDateTime {
+	return OptDateTime{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptDateTime is optional time.Time.
+type OptDateTime struct {
+	Value time.Time
+	Set   bool
+}
+
+// IsSet returns true if OptDateTime was set.
+func (o OptDateTime) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptDateTime) Reset() {
+	var v time.Time
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptDateTime) SetTo(v time.Time) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptDateTime) Get() (v time.Time, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptDateTime) Or(d time.Time) time.Time {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptInt returns new OptInt with value set to v.
+func NewOptInt(v int) OptInt {
+	return OptInt{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptInt is optional int.
+type OptInt struct {
+	Value int
+	Set   bool
+}
+
+// IsSet returns true if OptInt was set.
+func (o OptInt) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptInt) Reset() {
+	var v int
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptInt) SetTo(v int) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptInt) Get() (v int, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptInt) Or(d int) int {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptMultipartFile returns new OptMultipartFile with value set to v.
+func NewOptMultipartFile(v ht.MultipartFile) OptMultipartFile {
+	return OptMultipartFile{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptMultipartFile is optional ht.MultipartFile.
+type OptMultipartFile struct {
+	Value ht.MultipartFile
+	Set   bool
+}
+
+// IsSet returns true if OptMultipartFile was set.
+func (o OptMultipartFile) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptMultipartFile) Reset() {
+	var v ht.MultipartFile
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptMultipartFile) SetTo(v ht.MultipartFile) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptMultipartFile) Get() (v ht.MultipartFile, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptMultipartFile) Or(d ht.MultipartFile) ht.MultipartFile {
 	if v, ok := o.Get(); ok {
 		return v
 	}
@@ -657,6 +982,115 @@ func (o OptNilString) Or(d string) string {
 	return d
 }
 
+// NewOptNilStringArray returns new OptNilStringArray with value set to v.
+func NewOptNilStringArray(v []string) OptNilStringArray {
+	return OptNilStringArray{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptNilStringArray is optional nullable []string.
+type OptNilStringArray struct {
+	Value []string
+	Set   bool
+	Null  bool
+}
+
+// IsSet returns true if OptNilStringArray was set.
+func (o OptNilStringArray) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptNilStringArray) Reset() {
+	var v []string
+	o.Value = v
+	o.Set = false
+	o.Null = false
+}
+
+// SetTo sets value to v.
+func (o *OptNilStringArray) SetTo(v []string) {
+	o.Set = true
+	o.Null = false
+	o.Value = v
+}
+
+// IsNull returns true if value is Null.
+func (o OptNilStringArray) IsNull() bool { return o.Null }
+
+// SetToNull sets value to null.
+func (o *OptNilStringArray) SetToNull() {
+	o.Set = true
+	o.Null = true
+	var v []string
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptNilStringArray) Get() (v []string, ok bool) {
+	if o.Null {
+		return v, false
+	}
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptNilStringArray) Or(d []string) []string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
+// NewOptString returns new OptString with value set to v.
+func NewOptString(v string) OptString {
+	return OptString{
+		Value: v,
+		Set:   true,
+	}
+}
+
+// OptString is optional string.
+type OptString struct {
+	Value string
+	Set   bool
+}
+
+// IsSet returns true if OptString was set.
+func (o OptString) IsSet() bool { return o.Set }
+
+// Reset unsets value.
+func (o *OptString) Reset() {
+	var v string
+	o.Value = v
+	o.Set = false
+}
+
+// SetTo sets value to v.
+func (o *OptString) SetTo(v string) {
+	o.Set = true
+	o.Value = v
+}
+
+// Get returns value and boolean that denotes whether value was set.
+func (o OptString) Get() (v string, ok bool) {
+	if !o.Set {
+		return v, false
+	}
+	return o.Value, true
+}
+
+// Or returns value if set, or given parameter if does not.
+func (o OptString) Or(d string) string {
+	if v, ok := o.Get(); ok {
+		return v
+	}
+	return d
+}
+
 // Ref: #/components/schemas/SignupResponse
 type SignupResponse struct {
 	ID    int    `json:"id"`
@@ -695,6 +1129,30 @@ func (s *SignupResponse) SetEmail(val string) {
 }
 
 func (*SignupResponse) signupPostRes() {}
+
+// UploadMessageAttachmentBadRequest is response for UploadMessageAttachment operation.
+type UploadMessageAttachmentBadRequest struct{}
+
+func (*UploadMessageAttachmentBadRequest) uploadMessageAttachmentRes() {}
+
+// UploadMessageAttachmentNotFound is response for UploadMessageAttachment operation.
+type UploadMessageAttachmentNotFound struct{}
+
+func (*UploadMessageAttachmentNotFound) uploadMessageAttachmentRes() {}
+
+type UploadMessageAttachmentReq struct {
+	File OptMultipartFile `json:"file"`
+}
+
+// GetFile returns the value of File.
+func (s *UploadMessageAttachmentReq) GetFile() OptMultipartFile {
+	return s.File
+}
+
+// SetFile sets the value of File.
+func (s *UploadMessageAttachmentReq) SetFile(val OptMultipartFile) {
+	s.File = val
+}
 
 // Ref: #/components/schemas/User
 type User struct {

@@ -20,6 +20,12 @@ type Handler interface {
 	//
 	// POST /chat-rooms/groups
 	CreateGroupChatRoom(ctx context.Context, req *CreateGroupChatInput) (*ChatRoom, error)
+	// DeleteMessage implements deleteMessage operation.
+	//
+	// Delete a specific message.
+	//
+	// DELETE /messages/{id}
+	DeleteMessage(ctx context.Context, params DeleteMessageParams) (DeleteMessageRes, error)
 	// GetChatRooms implements GetChatRooms operation.
 	//
 	// Get all chat rooms the user belongs to.
@@ -50,6 +56,12 @@ type Handler interface {
 	//
 	// POST /messages/{message_id}/read
 	MarkMessageAsRead(ctx context.Context, params MarkMessageAsReadParams) (MarkMessageAsReadRes, error)
+	// MentionsGet implements GET /mentions operation.
+	//
+	// 現在ログイン中のユーザーに対する、未読のメンション通知を返します.
+	//
+	// GET /mentions
+	MentionsGet(ctx context.Context) (MentionsGetRes, error)
 	// MessagesGet implements GET /messages operation.
 	//
 	// Get messages with a user.
@@ -68,6 +80,12 @@ type Handler interface {
 	//
 	// POST /signup
 	SignupPost(ctx context.Context, req *UserInput) (SignupPostRes, error)
+	// UploadMessageAttachment implements uploadMessageAttachment operation.
+	//
+	// メッセージに画像を添付する.
+	//
+	// POST /messages/{message_id}/attachments
+	UploadMessageAttachment(ctx context.Context, req *UploadMessageAttachmentReq, params UploadMessageAttachmentParams) (UploadMessageAttachmentRes, error)
 	// UsersGet implements GET /users operation.
 	//
 	// Get all users.
@@ -79,18 +97,20 @@ type Handler interface {
 // Server implements http server based on OpenAPI v3 specification and
 // calls Handler to handle requests.
 type Server struct {
-	h Handler
+	h   Handler
+	sec SecurityHandler
 	baseServer
 }
 
 // NewServer creates new Server.
-func NewServer(h Handler, opts ...ServerOption) (*Server, error) {
+func NewServer(h Handler, sec SecurityHandler, opts ...ServerOption) (*Server, error) {
 	s, err := newServerConfig(opts...).baseServer()
 	if err != nil {
 		return nil, err
 	}
 	return &Server{
 		h:          h,
+		sec:        sec,
 		baseServer: s,
 	}, nil
 }
