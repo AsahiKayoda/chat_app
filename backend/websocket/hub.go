@@ -2,9 +2,7 @@ package websocket
 
 import (
 	"log"
-	"encoding/json"
-	"strconv" 
-	"backend/db"
+	"encoding/json" 
 )
 
 type Hub struct {
@@ -40,23 +38,17 @@ func (h *Hub) Run() {
 				log.Println("❌ room_id not found or invalid")
 				continue
 			}
+            for client := range h.Clients {
+                if client.RoomID == roomIDStr {
+                    select {
+                    case client.Send <- message:
+                    default:
+                        close(client.Send)
+                        delete(h.Clients, client)
+                    }
+                }
+            }
 
-			roomIDInt, err := strconv.Atoi(roomIDStr)
-			if err != nil {
-				log.Println("❌ room_id parse error:", err)
-				continue
-			}
-
-			for client := range h.Clients {
-				if db.IsUserInRoom(client.UserID, roomIDInt) {
-					select {
-					case client.Send <- message:
-					default:
-						close(client.Send)
-						delete(h.Clients, client)
-					}
-				}
-			}
 		}
 	}
 }

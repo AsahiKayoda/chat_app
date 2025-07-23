@@ -20,7 +20,7 @@ export function useChatSocket(
       return;
     }
 
-    const socket = new WebSocket(`ws://localhost:8080/ws?token=${token}`);
+    const socket = new WebSocket(`ws://localhost:8080/ws?token=${token}&room_id=${currentRoomId}`);
     socketRef.current = socket;
 
     socket.onopen = () => {
@@ -80,7 +80,7 @@ export function useChatSocket(
     return () => {
       socket.close();
     };
-  }, [userId]);
+  }, [userId, currentRoomId]);
 
   const sendMessage = (text: string, targetRoomId: number) => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {

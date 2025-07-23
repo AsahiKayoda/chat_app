@@ -1,3 +1,4 @@
+//client.go
 package websocket
 
 import (
@@ -18,7 +19,7 @@ import (
 type Client struct {
 	Conn   *websocket.Conn // WebSocket接続本体
 	UserID int             // 接続ユーザーのID（JWTで取得）
-	//RoomID string
+	RoomID string
 	Send   chan []byte     // 送信待ちメッセージ（JSON化されたデータ）
 }
 
@@ -38,6 +39,7 @@ type BroadcastMessage struct {
 	Text      string `json:"text"`
 	Timestamp string `json:"timestamp"`
 	ID        uint   `json:"id"`
+	Attachments []string `json:"attachments"`
 }
 
 // 時間関連の定数
@@ -123,6 +125,20 @@ func (c *Client) readPump(hub *Hub) {
 				continue
 			}
 
+
+			// ② 添付レコードを全件取得
+			atts, err := db.GetAttachmentsByMessageID(db.DB, saved.ID)
+			if err != nil {
+				log.Println("添付取得失敗:", err)
+				// ここでは空リストで続行してもOK
+			}
+
+			// ③ URLスライスに変換
+			var urls []string
+			for _, att := range atts {
+				urls = append(urls, "/uploads/"+att.FileName)
+			}
+
 			broadcastPayload := BroadcastMessage{
 				Type:      "message",
 				UserID:    saved.SenderID,
@@ -130,6 +146,7 @@ func (c *Client) readPump(hub *Hub) {
 				Text:      saved.Content,
 				Timestamp: saved.CreatedAt.Format(time.RFC3339),
 				ID:        saved.ID,
+				Attachments: urls,
 			}
 
 			jsonBytes, err := json.Marshal(broadcastPayload)

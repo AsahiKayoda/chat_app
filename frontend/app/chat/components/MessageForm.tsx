@@ -1,7 +1,7 @@
 'use client';
 
 import styles from '../chat.module.css';
-import { sendMessage, uploadAttachment } from '../services/chatService';
+import { uploadAttachment } from '../services/chatService';
 import { useState } from 'react';
 // @ts-ignore
 import Picker from '@emoji-mart/react';
@@ -11,9 +11,10 @@ type Props = {
   roomId: number;
   currentUserId: number;
   onMessageSent: () => void;
+  sendWebSocketMessage: (text: string, roomId: number) => void;
 };
 
-export default function MessageForm({ roomId, currentUserId, onMessageSent }: Props) {
+export default function MessageForm({ roomId, currentUserId, onMessageSent, sendWebSocketMessage, }: Props) {
   const [text, setText] = useState('');
   const [error, setError] = useState('');
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -47,12 +48,11 @@ export default function MessageForm({ roomId, currentUserId, onMessageSent }: Pr
 
     try {
       const fallbackText = text.trim() || '画像を送信しました';
-      const mentionUsernames = extractMentionUsernames(fallbackText);
-      const message = await sendMessage(Number(roomId), fallbackText, mentionUsernames);
-      console.log('✅ メッセージ送信成功: message.id =', message.id);
+      sendWebSocketMessage(fallbackText, roomId);
+      console.log('✅ メッセージ送信成功: message.id =', onmessage);
 
       if (previewFile) {
-        await uploadAttachment(message.id, previewFile);
+        const { id: msgId } = await uploadAttachment(roomId, previewFile);
         setPreviewFile(null);
         setPreviewUrl(null);
       }

@@ -146,6 +146,7 @@ export default function ChatLayout() {
             <MessageForm
               roomId={roomId}
               currentUserId={currentUserId}
+              sendWebSocketMessage={sendMessage}
               onMessageSent={() => {
                 fetchMessages(roomId)
                   .then((newMessages) => {
